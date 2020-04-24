@@ -115,6 +115,7 @@ std::string AriacOrderManager::GetProductFrame(std::string product_type) {
             bin_pose.position.x=-0.2;
             bin_pose.position.y=-0.2;
             bin_pose.position.z=0.1;
+
             bin_pose.orientation.x=-0.703527;
             bin_pose.orientation.y=0.0254473;
             bin_pose.orientation.z=-0.710205;
@@ -232,6 +233,8 @@ void AriacOrderManager::ExecuteOrder() {
     int i=0;
     bool update=false;
     int flag=0;
+    geometry_msgs::PoseStamped StampedPose_in, StampedPose_out;
+
     // for (const auto &order:received_orders_){
     while(true) {
         ROS_INFO_STREAM("in");
@@ -279,6 +282,16 @@ void AriacOrderManager::ExecuteOrder() {
                 product_type_pose_.second = product.pose;
                 ROS_INFO_STREAM("Product pose: " << product_type_pose_.second.position.x);
 
+                StampedPose_in.header.frame_id = "/kit_tray_1";
+                StampedPose_in.pose = product.pose;
+                part_tf_listener_.transformPose("/world",StampedPose_in,StampedPose_out);
+
+                auto f = std::make_pair(product.type, StampedPose_out.pose);
+
+                if(std::find(placed_parts.begin(),placed_parts.end(),f)==placed_parts.end())
+                {
+
+
                     // ros::spinOnce();
                     // product_frame_list_ = camera_.get_product_frame_list();
 //                bool pick_n_place_success = false;
@@ -319,6 +332,7 @@ void AriacOrderManager::ExecuteOrder() {
                 ROS_INFO_STREAM(placed_parts.size());
                 ROS_INFO_STREAM(placed_parts[placed_parts.size()-1].first);
                 pick_n_place_success=false;
+            }
                 //--todo: What do we do if pick and place fails?
             }
             //wait 5 sec
@@ -397,7 +411,6 @@ void AriacOrderManager::dropallparts(std::vector<std::pair<std::string,geometry_
   home_joint_pose_1 = {0.0, 3.11, -1.60, 2.0, 4.30, -1.53, 0};
   home_joint_pose_2 = {-1.18, 3.11, -1.60, 2.0, 4.30, -1.53, 0};
   int i=0;
-  ROS_INFO_STREAM("Dropping all Parts");
   do {
     ROS_INFO_STREAM(i);
 
@@ -435,19 +448,83 @@ bool AriacOrderManager::checkOrderUpdate(int i,int diff, std::string order_id, i
         auto new_order=var.order_id;
         if(order_id+"_update_"+std::to_string(update_no)==new_order) {
             ROS_INFO_STREAM("Found a New Order");
-            // auto new_shipments = var.shipments;
-            // new_agv_id=
+            auto new_shipments = var.shipments;
+            const auto &var1 = new_shipments[0];
+            auto new_agv=var1.agv_id.back();
+            int new_agv_id = (var1.agv_id == "any") ? 1 : new_agv - '0';
+            auto new_products = var1.products;
+            
+            int parts_in_order=0;
+            int parts_already_placed=0;
+            bool all_different=false;
+            std::vector<int> present;
+            std::vector<int> present_wrong_location;
+
+            // Check which parts exist at same location in new order
+            // Check which parts are at diffrent locations (Can be shuffled)
+            geometry_msgs::PoseStamped StampedPose_in, StampedPose_out;
+            if(new_agv_id==agv_id)
+            {
+            for (const auto &p: new_products)
+            {
+              parts_in_order++; 
+              ROS_INFO_STREAM("new"<<p.type);
+              StampedPose_in.header.frame_id = "/kit_tray_1";
+              StampedPose_in.pose = p.pose;
+              part_tf_listener_.transformPose("/world",StampedPose_in,StampedPose_out);
+              ROS_INFO_STREAM("new"<<StampedPose_out.pose);
+              for(int q=0;q<placed_parts.size();q++)
+              {
+                ROS_INFO_STREAM("old"<<placed_parts[q].first);
+                ROS_INFO_STREAM("old"<<placed_parts[q].second);
+                if(p.type==placed_parts[q].first && StampedPose_out.pose==placed_parts[q].second)
+                {
+                    present.push_back(q);
+                }
+                else if(p.type == placed_parts[q].first)
+                {
+                    present_wrong_location.push_back(q);
+                }
+              }
+            }
+            ROS_INFO_STREAM("Length"<<present.size()); 
+            ROS_INFO_STREAM("Length"<<placed_parts.size()); 
+            std::vector<std::pair<std::string,geometry_msgs::Pose>> parts_to_remove;
+            parts_to_remove=placed_parts;
+
+            // Keep parts which are at right pose or can be shuffled
+            if(present.size()>0 )
+            {
+                ROS_INFO_STREAM("Dropping unrequired parts");
+                for(int l=0;l<present.size();l++){
+                    parts_to_remove.erase(parts_to_remove.begin() + present[l]);
+                }
+                for(int h=0;h<placed_parts.size();h++)
+                {
+                    if(std::find(present.begin(),present.end(),h)==present.end())
+                    {
+                      placed_parts.erase(placed_parts.begin() + h);
+                    }
+                }
+                ROS_INFO_STREAM("Length"<<placed_parts.size()); 
+                dropallparts(parts_to_remove, agv_id);
+                return true;
+            }
+        }
+
+
+
 
             // drop all parts if updated order on different AGV
             // drop all parts if all parts are different
-            // if(agv_id!=new_agv_id || all_different=true)
-            // {
-            ROS_INFO_STREAM("All parts in new order are different");
+            if(agv_id!=new_agv_id || (present.size()==0 && present_wrong_location.size()==0) )
+            {
+            ROS_INFO_STREAM("All parts in new order are different or on Other AGV");
             ROS_INFO_STREAM("Dropping all parts in the kit");
             dropallparts(placed_parts, agv_id);
             placed_parts.clear();
             return true;
-            // }
+            }
         }
         update_no++;
     }
