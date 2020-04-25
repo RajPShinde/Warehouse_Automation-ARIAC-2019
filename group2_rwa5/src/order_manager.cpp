@@ -208,7 +208,6 @@ bool AriacOrderManager::PickAndPlace(const std::pair<std::string,geometry_msgs::
         else{
           placed_parts.push_back(std::make_pair(product_type,StampedPose_out.pose));
         }
-
     }
     else {
       placed_parts.push_back(std::make_pair(product_type,StampedPose_out.pose));
@@ -442,6 +441,11 @@ std::vector<geometry_msgs::Pose> AriacOrderManager::GetProductPose(){
 
 bool AriacOrderManager::checkOrderUpdate(int i,int diff, std::string order_id, int agv_id){
     int update_no=0;
+            ROS_INFO_STREAM(placed_parts[0].first);
+            ROS_INFO_STREAM(placed_parts[1].first);
+            ROS_INFO_STREAM(placed_parts[2].first);
+            ROS_INFO_STREAM(placed_parts[3].first);
+
     for(int k=i+1;k<diff+1;k++) {
         const auto &var = received_orders_[k];
         ROS_INFO_STREAM("Order"<<var.order_id);
@@ -457,8 +461,9 @@ bool AriacOrderManager::checkOrderUpdate(int i,int diff, std::string order_id, i
             int parts_in_order=0;
             int parts_already_placed=0;
             bool all_different=false;
-            std::vector<int> present;
-            std::vector<int> present_wrong_location;
+            std::vector<std::pair<std::string,geometry_msgs::Pose>> present;
+            std::vector<std::pair<std::string,geometry_msgs::Pose>> present_wrong_location;
+            std::vector<std::pair<std::string,geometry_msgs::Pose>> parts_to_remove;
 
             // Check which parts exist at same location in new order
             // Check which parts are at diffrent locations (Can be shuffled)
@@ -468,48 +473,33 @@ bool AriacOrderManager::checkOrderUpdate(int i,int diff, std::string order_id, i
             for (const auto &p: new_products)
             {
               parts_in_order++; 
-              ROS_INFO_STREAM("new"<<p.type);
               StampedPose_in.header.frame_id = "/kit_tray_1";
               StampedPose_in.pose = p.pose;
               part_tf_listener_.transformPose("/world",StampedPose_in,StampedPose_out);
-              ROS_INFO_STREAM("new"<<StampedPose_out.pose);
+              auto h=std::make_pair(p.type,StampedPose_out.pose);
               for(int q=0;q<placed_parts.size();q++)
               {
-                ROS_INFO_STREAM("old"<<placed_parts[q].first);
-                ROS_INFO_STREAM("old"<<placed_parts[q].second);
-                if(p.type==placed_parts[q].first && StampedPose_out.pose==placed_parts[q].second)
+                if(placed_parts[q].first==p.type && placed_parts[q].second==StampedPose_out.pose)
                 {
-                    present.push_back(q);
-                }
-                else if(p.type == placed_parts[q].first)
-                {
-                    present_wrong_location.push_back(q);
+                    ROS_INFO_STREAM(q);
+                    ROS_INFO_STREAM("Found");
+                    present.push_back(std::make_pair(p.type,StampedPose_out.pose));
                 }
               }
             }
-            ROS_INFO_STREAM("Length"<<present.size()); 
-            ROS_INFO_STREAM("Length"<<placed_parts.size()); 
-            std::vector<std::pair<std::string,geometry_msgs::Pose>> parts_to_remove;
-            parts_to_remove=placed_parts;
 
             // Keep parts which are at right pose or can be shuffled
-            if(present.size()>0 )
+            for(int m=0;m<placed_parts.size();m++)
             {
-                ROS_INFO_STREAM("Dropping unrequired parts");
-                for(int l=0;l<present.size();l++){
-                    parts_to_remove.erase(parts_to_remove.begin() + present[l]);
-                }
-                for(int h=0;h<placed_parts.size();h++)
+                if(std::find(present.begin(),present.end(),placed_parts[m])==present.end())
                 {
-                    if(std::find(present.begin(),present.end(),h)==present.end())
-                    {
-                      placed_parts.erase(placed_parts.begin() + h);
-                    }
+                 parts_to_remove.push_back(std::make_pair(placed_parts[m].first,placed_parts[m].second));
                 }
-                ROS_INFO_STREAM("Length"<<placed_parts.size()); 
-                dropallparts(parts_to_remove, agv_id);
-                return true;
             }
+            dropallparts(parts_to_remove, agv_id);
+            ROS_INFO_STREAM("placed_parts:-"<<placed_parts.size());
+            return true;
+
         }
 
 
@@ -517,7 +507,7 @@ bool AriacOrderManager::checkOrderUpdate(int i,int diff, std::string order_id, i
 
             // drop all parts if updated order on different AGV
             // drop all parts if all parts are different
-            if(agv_id!=new_agv_id || (present.size()==0 && present_wrong_location.size()==0) )
+            if(agv_id!=new_agv_id || present.size()==0 )
             {
             ROS_INFO_STREAM("All parts in new order are different or on Other AGV");
             ROS_INFO_STREAM("Dropping all parts in the kit");

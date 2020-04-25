@@ -30,11 +30,16 @@ public:
     RobotController(std::string arm_id_1);
     ~RobotController();
     bool Planner();
+    bool Planner2();
     void Execute();
+    void Execute2();
     void GoToTarget(std::initializer_list<geometry_msgs::Pose> list, int f);
     void GoToTarget(const geometry_msgs::Pose& pose,int f);
     void SendRobotPosition(std::vector<double> pose);
     void SendRobotPosition2(std::vector<double> pose);
+    void SendRobotHome();
+    void SendRobotHome2();
+    void sendRobotToConveyor();
     bool DropPart(geometry_msgs::Pose pose, int agv_id);
     bool DropPart(geometry_msgs::Pose part_pose);
     void GripperToggle(const bool& state);
@@ -48,7 +53,6 @@ public:
     bool PickPart(geometry_msgs::Pose& part_pose, int agv_id);
     bool PickPart(geometry_msgs::Pose& part_pose);
     bool PickPartconveyor(std::string);
-    void sendRobotToConveyor();
 
 
 private:
@@ -84,6 +88,7 @@ private:
 
     std::string object;
     bool plan_success_;
+    bool plan_success_2;
     std::vector<double> home_joint_pose_;
     std::vector<double> home_joint_pose_1;
     std::vector<double> bin_drop_pose_;

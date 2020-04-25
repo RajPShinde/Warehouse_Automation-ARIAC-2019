@@ -1,6 +1,3 @@
-//
-// Created by zeid on 2/27/20.
-//
 #include "robot_controller.h"
 
 #include <moveit/robot_model/robot_model.h>
@@ -8,12 +5,6 @@
 
 #include <moveit/robot_model_loader/robot_model_loader.h>
 
-
-/**
- * Constructor for the robot
- * Class attributes are initialized in the constructor init list
- * You can instantiate another robot by passing the correct parameter to the constructor
- */
 RobotController::RobotController(std::string arm_id_1) :
 robot_controller_nh_("/ariac/"+arm_id_1),
 robot_controller_options("manipulator",
@@ -53,14 +44,14 @@ robot_move_group_2(robot_controller_options_2) {
      * [6] = wrist_3_joint
      */
 
-    home_joint_pose_ = {1.32, 3.11, -1.60, 2.0, 4.30, -1.53, 0};
-    home_joint_pose_1 = {1.32, 3.11, -1.60, 2.0, 4.30, -1.53, 0};
+    home_joint_pose_ = {2, 3.11, -1.60, 2.0, 4.30, -1.53, 0};
+    home_joint_pose_1 = {0, 3.11, -1.60, 2.0, 4.30, -1.53, 0};
     bin_drop_pose_ = {2.5, 3.11, -1.60, 2.0, 3.47, -1.53, 0};
     kit_drop_pose_ = {2.65, 1.57, -1.60, 2.0, 4.30, -1.53, 0};
     belt_drop_pose_ = {2.5, 0, -1.60, 2.0, 3.47, -1.53, 0};
     conveyor = {1.13, 0, -0.70, 1.65, 3.74, -1.56, 0};
     drop_part={2.65, 1.57, -1.60, 2.0, 3.47, -1.53, 0};
-    home_joint_pose_2 = {-1.32, 3.11, -1.60, 2.0, 4.30, -1.53, 0};
+    home_joint_pose_2 = {0, 3.11, -1.60, 2.0, 4.30, -1.53, 0};
     kit_drop_pose_2 = {-2.65, -1.57, -1.60, 2.0, 4.30, -1.53, 0};
 
 
@@ -73,29 +64,21 @@ robot_move_group_2(robot_controller_options_2) {
     gripper_subscriber_2 = gripper_nh_2.subscribe(
             "/ariac/arm2/gripper/state", 10, &RobotController::GripperCallback2, this);
 
-    SendRobotPosition(home_joint_pose_1);
-    SendRobotPosition2(home_joint_pose_2);
+    SendRobotHome();
+    SendRobotHome2();
 
     robot_tf_listener_.waitForTransform("arm1_linear_arm_actuator", "arm1_ee_link",
                                             ros::Time(0), ros::Duration(10));
     robot_tf_listener_.lookupTransform("/arm1_linear_arm_actuator", "/arm1_ee_link",
                                            ros::Time(0), robot_tf_transform_);
 
-
     fixed_orientation_.x = robot_tf_transform_.getRotation().x();
     fixed_orientation_.y = robot_tf_transform_.getRotation().y();
     fixed_orientation_.z = robot_tf_transform_.getRotation().z();
     fixed_orientation_.w = robot_tf_transform_.getRotation().w();
-    ROS_INFO_STREAM(fixed_orientation_.x);
-    ROS_INFO_STREAM(fixed_orientation_.y);
-    ROS_INFO_STREAM(fixed_orientation_.z);
-    ROS_INFO_STREAM(fixed_orientation_.w);
 
     tf::quaternionMsgToTF(fixed_orientation_,q);
     tf::Matrix3x3(q).getRPY(roll_def_,pitch_def_,yaw_def_);
-        ROS_INFO_STREAM(roll_def_);
-    ROS_INFO_STREAM(pitch_def_ );
-    ROS_INFO_STREAM(yaw_def_);
 
 
     end_position_ = home_joint_pose_;
@@ -184,6 +167,7 @@ void RobotController::Execute() {
     }
 }
 
+
 void RobotController::GoToTarget(const geometry_msgs::Pose& pose, int f) {
 
     if (f==0){
@@ -263,6 +247,32 @@ void RobotController::SendRobotPosition(std::vector<double> pose) {
 void RobotController::SendRobotPosition2(std::vector<double> pose) {
     // ros::Duration(2.0).sleep();
     robot_move_group_2.setJointValueTarget(pose);
+    // this->execute();
+    ros::AsyncSpinner spinner(4);
+    spinner.start();
+    if (this->Planner()) {
+        robot_move_group_2.move();
+        ros::Duration(1.5).sleep();
+    }
+     ros::Duration(0.5).sleep();
+}
+
+void RobotController::SendRobotHome() {
+    // ros::Duration(2.0).sleep();
+    robot_move_group_.setJointValueTarget(home_joint_pose_1);
+    // this->execute();
+    ros::AsyncSpinner spinner(4);
+    spinner.start();
+    if (this->Planner()) {
+        robot_move_group_.move();
+        ros::Duration(1.5).sleep();
+    }
+     ros::Duration(0.5).sleep();
+}
+
+void RobotController::SendRobotHome2() {
+    // ros::Duration(2.0).sleep();
+    robot_move_group_2.setJointValueTarget(home_joint_pose_2);
     // this->execute();
     ros::AsyncSpinner spinner(4);
     spinner.start();
