@@ -287,7 +287,7 @@ void AriacOrderManager::ExecuteOrder() {
 
                 auto f = std::make_pair(product.type, StampedPose_out.pose);
 
-                if(std::find(placed_parts.begin(),placed_parts.end(),f)==placed_parts.end())
+                if(std::count(placed_parts.begin(),placed_parts.end(),f)==0)
                 {
 
 
@@ -498,6 +498,9 @@ bool AriacOrderManager::checkOrderUpdate(int i,int diff, std::string order_id, i
             }
             dropallparts(parts_to_remove, agv_id);
             ROS_INFO_STREAM("placed_parts:-"<<placed_parts.size());
+            placed_parts.clear();
+            placed_parts=present;
+            ROS_INFO_STREAM("placed_parts:-"<<placed_parts.size());
             return true;
 
         }
@@ -532,7 +535,7 @@ bool AriacOrderManager::PickAndPlace(std::pair<std::string,geometry_msgs::Pose> 
     if(product_type == "pulley_part")
         part_pose.position.z += 0.08;
     if(product_type == "piston_rod_part")
-        part_pose.position.z -= 0.0155;
+        part_pose.position.z -= 0.0158;
     if(product_type == "gear_part")
         part_pose.position.z -= 0.011;
     if(product_type == "disk_part")
@@ -591,7 +594,7 @@ void AriacOrderManager::OutOfReach(std::string arm, std::string num, std::pair<s
   if(product.first == "pulley_part")
       part_pose.position.z += 0.08;
   if(product.first == "piston_rod_part")
-      part_pose.position.z -= 0.0155;
+      part_pose.position.z -= 0.0158;
   if(product.first == "gear_part")
       part_pose.position.z -= 0.011;
   if(product.first == "disk_part")
