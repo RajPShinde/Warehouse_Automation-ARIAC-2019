@@ -88,6 +88,14 @@ public:
     std::string cam6_part_type;
     std::string cam7_part_type;
 
+    int count_bin1 = 0;
+    int count_bin2 = 0;
+    int count_bin3 = 0;
+    int count_bin4 = 0;
+    int count_bin5 = 0;
+    int count_bin6 = 0;
+
+
 private:
     ros::NodeHandle sensor_nh_;
     ros::Subscriber camera_1_subscriber_;

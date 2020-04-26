@@ -4,6 +4,7 @@
 #include <map>
 #include <string>
 #include <iostream>
+#include <algorithm>
 
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/PoseArray.h>
@@ -31,6 +32,8 @@ public:
     bool checkOrderUpdate(int,int,std::string, int agv_id);
     void dropallparts(std::vector<std::pair<std::string,geometry_msgs::Pose>>, int agv_id);
     void OutOfReach(std::string arm, std::string num, std::pair<std::string,geometry_msgs::Pose> product, int agv_id);
+    std::vector<geometry_msgs::Pose> FillBin(int bin_number, std::string conveyor_part_type);
+    double round_up(double value, int decimal_places);
     std::vector<std::string> GetProductType();
     std::vector<geometry_msgs::Pose> GetProductPose();
     std::vector<std::string> productlist_type;
@@ -42,7 +45,15 @@ public:
     std::string bin5_part;
     std::string bin6_part;
     std::vector<std::string> bin_parts;
+    std::vector<std::string> empty_bins;
     std::string empty_bin;
+    std::vector<std::vector<geometry_msgs::Pose>> all_empty_bins_pose;
+    std::vector<geometry_msgs::Pose> bin1_poses;
+    std::vector<geometry_msgs::Pose> bin2_poses;
+    std::vector<geometry_msgs::Pose> bin3_poses;
+    std::vector<geometry_msgs::Pose> bin4_poses;
+    std::vector<geometry_msgs::Pose> bin5_poses;
+    std::vector<geometry_msgs::Pose> bin6_poses;    
 
 private:
     ros::NodeHandle order_manager_nh_;

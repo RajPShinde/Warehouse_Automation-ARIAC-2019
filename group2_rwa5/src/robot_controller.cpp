@@ -70,8 +70,8 @@ robot_move_group_2(robot_controller_options_2) {
     gripper_subscriber_2 = gripper_nh_2.subscribe(
             "/ariac/arm2/gripper/state", 10, &RobotController::GripperCallback2, this);
 
-    SendRobotHome();
-    SendRobotHome2();
+    // SendRobotHome();
+    // SendRobotHome2();
 
     robot_tf_listener_.waitForTransform("arm1_linear_arm_actuator", "arm1_ee_link",
                                             ros::Time(0), ros::Duration(10));
@@ -611,7 +611,12 @@ bool RobotController::PickPartconveyor(std::string product){
 
 
   grab_pose_ = final_;
-  place_pose_ = final_;
+  // place_pose_ = final_;
+  place_pose_.orientation.w = 0.707;
+  place_pose_.orientation.y = 0.707;
+  place_pose_.position.x = -0.288;
+  place_pose_.position.y = 1.144; //0.7 - 1.8
+  place_pose_.position.z = 0.8;
 
   grab_pose_.position.z = 0.928;
   // int trial = beam.object_derived;
@@ -625,7 +630,7 @@ bool RobotController::PickPartconveyor(std::string product){
     // ROS_INFO_STREAM_THROTTLE(2, "obj derived: "<< beam.object_derived<<" break_beam_counter: "<<beam.break_beam_counter);
     // ROS_INFO_STREAM_THROTTLE(2, "arm1 engage: "<< beam.arm1_engage_derived);
 
-  if(beam.grab_now_1 == true /*&& beam.object_derived == beam.break_beam_counter && beam.arm1_engage_derived == true*/){
+  if(beam.grab_now_1 == true && beam.object_derived == beam.break_beam_counter && beam.arm1_engage_derived == true){
     ROS_INFO_STREAM("Grabbing now...");
     // ros::Duration(1.0).sleep();
     grab_pose_.position.x = beam.x_grab;
@@ -658,6 +663,108 @@ bool RobotController::PickPartconveyor(std::string product){
   ros::spin();
   return gripper_state_;
 }
+
+/*bool RobotController::PickPartconveyor(std::string product){
+  ROS_INFO_STREAM("Inside pick_conv function");
+  std::map<std::string, double> pose_after_grab;
+  gripper_state_ = true;
+  ros::AsyncSpinner spinner(1);
+  spinner.start();
+  robot_move_group_.setPlanningTime(20);
+  robot_move_group_.setNumPlanningAttempts(10);
+  robot_move_group_.setPlannerId("RRTConnectkConfigDefault");
+  robot_move_group_.setMaxVelocityScalingFactor(0.9);
+  robot_move_group_.setMaxAccelerationScalingFactor(0.9);
+  robot_move_group_.allowReplanning(true);
+
+  temp_pose_["shoulder_pan_joint"] = 0;
+  temp_pose_["shoulder_lift_joint"] = -0.5;
+  temp_pose_["elbow_joint"] = 0.5;
+  temp_pose_["wrist_1_joint"] = 0;
+  temp_pose_["wrist_2_joint"] = 0;
+  temp_pose_["wrist_3_joint"] = 0;
+  temp_pose_["linear_arm_actuator_joint"] = 0;
+
+  pose_after_grab["shoulder_pan_joint"] = 1.63;
+  pose_after_grab["shoulder_lift_joint"] = -1.26;
+  pose_after_grab["elbow_joint"] = 2.01;
+  pose_after_grab["wrist_1_joint"] = 4.02;
+  pose_after_grab["wrist_2_joint"] = -1.51;
+  pose_after_grab["wrist_3_joint"] = 0;
+  pose_after_grab["linear_arm_actuator_joint"] = -0.05;
+
+  robot_move_group_.setJointValueTarget(temp_pose_);
+  robot_move_group_.move();
+  ROS_INFO_STREAM("Move to temp position");
+  ros::Duration(0.5).sleep();
+  final_.orientation.w = 0.707;
+  final_.orientation.y = 0.707;
+  final_.position.x = 1.22;
+  final_.position.y = 1.8; //0.7 - 1.8
+  final_.position.z = 0.95;
+
+  robot_move_group_.setPoseTarget(final_ );
+  robot_move_group_.move();
+  ROS_INFO_STREAM("Move to final_ position");
+
+
+  grab_pose_ = final_;
+  place_pose_ = final_;
+
+  grab_pose_.position.z = 0.925;
+  // int trial = beam.object_derived;
+  // ros::spin();
+  while(ros::ok())
+  {
+    // ros::Subscriber logical_camera_subscriber_7 = node.subscribe("/ariac/logical_camera_7", 10, 
+    //           &AriacSensorManager::LogicalCamera7Callback, &AriacSensorManager);
+    // ROS_INFO_STREAM("Inside...");
+    // ROS_INFO_STREAM_THROTTLE(2, "Grab now: "<< beam.grab_now_1);
+    // ROS_INFO_STREAM_THROTTLE(2, "obj derived: "<< beam.object_derived<<" break_beam_counter: "<<beam.break_beam_counter);
+    // ROS_INFO_STREAM_THROTTLE(2, "arm1 engage: "<< beam.arm1_engage_derived);
+  //   gripper_state_ = true;
+  // while(gripper_state_ == true){  /*&& beam.object_derived == beam.break_beam_counter && beam.arm1_engage_derived == true
+    // ROS_INFO_STREAM("Grab now: " << beam.grab_now_1);
+    // gripper_state_ = true;
+    if(beam.grab_now_1 == true){
+    ROS_INFO_STREAM("Grabbing now...");
+    // ros::Duration(0.5).sleep();
+    grab_pose_.position.x = beam.x_grab;
+    grab_pose_.position.y = beam.y_grab-0.10;
+    grab_pose_.position.z = 0.925; //0.928
+    robot_move_group_.setPoseTarget(grab_pose_);
+    GripperToggle(true);
+    robot_move_group_.move();
+    ROS_INFO_STREAM("Grab pose reached");
+
+    beam.grab_now_1 = false;
+    beam.arm1_engage_derived = false;
+    ROS_INFO_STREAM("Gripper state:" << gripper_state_);
+    if(gripper_state_){
+      place_pose_.position.x = 0.25;
+      place_pose_.position.y = 1;
+      place_pose_.position.z = 1.2;
+      robot_move_group_.setPoseTarget(place_pose_);
+      robot_move_group_.move(); 
+      ROS_INFO_STREAM("place pose reached"); 
+      ros::Duration(0.5).sleep();
+      GripperToggle(false);
+    }
+    ROS_INFO_STREAM("Inside if...");
+    if(!gripper_state_){
+      ROS_INFO_STREAM("Break..");
+      break;
+    }
+    robot_move_group_.setPoseTarget(final_);
+    robot_move_group_.move();
+    // ROS_INFO_STREAM("final pose reached");
+  }
+  // }
+}
+  // ros::spin();
+  ROS_INFO_STREAM("Return...");
+  return gripper_state_;
+}*/
 
 bool RobotController::PickPart(geometry_msgs::Pose& part_pose) {
     // gripper_state = false;

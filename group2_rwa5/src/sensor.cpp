@@ -89,6 +89,7 @@ AriacSensorManager::~AriacSensorManager() {}
 
 void AriacSensorManager::LogicalCamera1Callback(const osrf_gear::LogicalCameraImage::ConstPtr& image_msg){
     if (init1) return;
+    count_bin1 = image_msg->models.size();
     if (image_msg->models.size() == 0) {
         // ROS_ERROR_STREAM("Logical Camera 1 does not see anything");
         init1 = true;
@@ -107,6 +108,7 @@ void AriacSensorManager::LogicalCamera1Callback(const osrf_gear::LogicalCameraIm
 
 void AriacSensorManager::LogicalCamera2Callback(const osrf_gear::LogicalCameraImage::ConstPtr & image_msg){
     if (init2) return;
+    count_bin2 = image_msg->models.size();
     if (image_msg->models.size() == 0){
         // ROS_ERROR_STREAM("Logical Camera 2 does not see anything");
         init2 = true;
@@ -124,6 +126,7 @@ void AriacSensorManager::LogicalCamera2Callback(const osrf_gear::LogicalCameraIm
 
 void AriacSensorManager::LogicalCamera3Callback(const osrf_gear::LogicalCameraImage::ConstPtr & image_msg){
     if (init3) return;
+    count_bin3 = image_msg->models.size();
     if (image_msg->models.size() == 0){
         // ROS_ERROR_STREAM("Logical Camera 3 does not see anything");
         init3 = true;
@@ -142,8 +145,9 @@ void AriacSensorManager::LogicalCamera3Callback(const osrf_gear::LogicalCameraIm
 
 void AriacSensorManager::LogicalCamera4Callback(const osrf_gear::LogicalCameraImage::ConstPtr& image_msg){
     if (init4) return;
-    ROS_INFO_STREAM_THROTTLE(2,
-                     "Logical camera 4: '" << image_msg->models.size() << "' objects.");
+    count_bin4 = image_msg->models.size();
+    // ROS_INFO_STREAM_THROTTLE(2,
+    //                  "Logical camera 4: '" << image_msg->models.size() << "' objects.");
 
     if (image_msg->models.size() == 0) {
         // ROS_ERROR_STREAM("Logical Camera 4 does not see anything");
@@ -165,6 +169,7 @@ void AriacSensorManager::LogicalCamera4Callback(const osrf_gear::LogicalCameraIm
 
 void AriacSensorManager::LogicalCamera5Callback(const osrf_gear::LogicalCameraImage::ConstPtr& image_msg){
     if (init5) return;
+    count_bin5 = image_msg->models.size();
     if (image_msg->models.size() == 0) {
         // ROS_ERROR_STREAM("Logical Camera 5 does not see anything");
         init5 = true;
@@ -182,6 +187,7 @@ void AriacSensorManager::LogicalCamera5Callback(const osrf_gear::LogicalCameraIm
 
 void AriacSensorManager::LogicalCamera6Callback(const osrf_gear::LogicalCameraImage::ConstPtr& image_msg){
     if (init6) return;
+    count_bin6 = image_msg->models.size();
     if (image_msg->models.size() == 0) {
         // ROS_ERROR_STREAM("Logical Camera 6 does not see anything");
         init6 = true;
@@ -209,6 +215,7 @@ void AriacSensorManager::LogicalCamera7Callback(const osrf_gear::LogicalCameraIm
       geometry_msgs::TransformStamped tf_camera_wrt_world;
       //piston rod part is obtained by rostpic echo /ariac/logical_camera_4
       std::string cam_frame = "logical_camera_7_piston_rod_part_" + std::to_string(obj_count) + "_frame";
+
       // std::string cam_frame = "logical_camera_7_"+std::string object_on_belt + std::to_string(obj_count) + "_frame";
       try{
         tf_camera_wrt_world.transform.translation.x = image_msg->pose.position.x;
@@ -440,36 +447,72 @@ bool AriacSensorManager::getBeam() {
 
 std::string AriacSensorManager::LogicalCamera1PartType(){
     // if (init1_) return;
-    cam1_part_type = logical1_;
+    if(logical1_ == ""){
+        cam1_part_type = 'n';
+    }
+    else{
+        cam1_part_type = logical1_;
+    }
+    
     return cam1_part_type;
  }
 
 std::string AriacSensorManager::LogicalCamera2PartType(){
     // if (init1_) return;
-    cam2_part_type = logical2_;
+    if(logical2_ == ""){
+        cam2_part_type = 'n';
+    }
+    else{
+        cam2_part_type = logical2_;
+    }
+    
     return cam2_part_type;
  }
 std::string AriacSensorManager::LogicalCamera3PartType(){
     // if (init1_) return;
-    cam3_part_type = logical3_;
+    if(logical3_ == ""){
+        cam3_part_type = 'n';
+    }
+    else{
+        cam3_part_type = logical3_;
+    }
+    
     return cam3_part_type;
  }
 
 std::string AriacSensorManager::LogicalCamera4PartType(){
     // if (init1_) return;
-    cam4_part_type = logical4_;
+    if(logical4_ == ""){
+        cam4_part_type = 'n';
+    }
+    else{
+        cam4_part_type = logical4_;
+    }
+    
     return cam4_part_type;
  }
 
 std::string AriacSensorManager::LogicalCamera5PartType(){
     // if (init1_) return;
-    cam5_part_type = logical5_;
+    if(logical5_ == ""){
+        cam5_part_type = 'n';
+    }
+    else{
+        cam5_part_type = logical5_;
+    }
+    
     return cam5_part_type;
  }
 
 std::string AriacSensorManager::LogicalCamera6PartType(){
     // if (init1_) return;
-    cam6_part_type = logical6_;
+    if(logical6_ == ""){
+        cam6_part_type = 'n';
+    }
+    else{
+        cam6_part_type = logical6_;
+    }
+    
     return cam6_part_type;
  }
 
