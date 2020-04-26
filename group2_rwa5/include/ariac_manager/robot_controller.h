@@ -29,7 +29,8 @@ class RobotController{
 public:
     RobotController(std::string arm_id_1);
     ~RobotController();
-    bool Planner();
+    bool Planner1();
+    bool Planner2();
     void Execute();
     void GoToTarget(std::initializer_list<geometry_msgs::Pose> list, int f);
     void GoToTarget(const geometry_msgs::Pose& pose,int f);
@@ -49,6 +50,8 @@ public:
     bool PickPart(geometry_msgs::Pose& part_pose);
     bool PickPartconveyor(std::string);
     void sendRobotToConveyor();
+    void SendRobot1();
+    void SendRobot2();
 
 
 private:
@@ -84,6 +87,7 @@ private:
 
     std::string object;
     bool plan_success_;
+    bool plan_success_2;
     std::vector<double> home_joint_pose_;
     std::vector<double> home_joint_pose_1;
     std::vector<double> bin_drop_pose_;
@@ -96,6 +100,9 @@ private:
     std::vector<double> bin_drop_pose_2;
     std::vector<double> kit_drop_pose_2;
     std::vector<double> belt_drop_pose_2;
+    std::vector<double> flipped_drop_pose_, flipped_arm1_pose_1,
+                        flipped_arm2_pose_1, flipped_arm1_pose_2,
+                        flipped_arm2_pose_2, flipped_arm1_pose_3;
     std::vector<double> conveyor2;
 
     geometry_msgs::Pose home_cart_pose_;

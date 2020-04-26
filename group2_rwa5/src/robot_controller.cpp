@@ -54,15 +54,21 @@ robot_move_group_2(robot_controller_options_2) {
      */
 
     home_joint_pose_ = {1.32, 3.11, -1.60, 2.0, 4.30, -1.53, 0};
-    home_joint_pose_1 = {1.32, 3.11, -1.60, 2.0, 4.30, -1.53, 0};
+    home_joint_pose_1 = {1.18, 3.11, -1.60, 2.0, 4.30, -1.53, 0};
     bin_drop_pose_ = {2.5, 3.11, -1.60, 2.0, 3.47, -1.53, 0};
     kit_drop_pose_ = {2.65, 1.57, -1.60, 2.0, 4.30, -1.53, 0};
     belt_drop_pose_ = {2.5, 0, -1.60, 2.0, 3.47, -1.53, 0};
     conveyor = {1.13, 0, -0.70, 1.65, 3.74, -1.56, 0};
     drop_part={2.65, 1.57, -1.60, 2.0, 3.47, -1.53, 0};
-    home_joint_pose_2 = {-1.32, 3.11, -1.60, 2.0, 4.30, -1.53, 0};
+    home_joint_pose_2 = {-1.18, 3.11, -1.60, 2.0, 4.30, -1.53, 0};
     kit_drop_pose_2 = {-2.65, -1.57, -1.60, 2.0, 4.30, -1.53, 0};
+    flipped_drop_pose_ = {1.18, 1.40, -0.65, 1.80, 5.05, -0.10, 0};
 
+    flipped_arm1_pose_1 = {1.18, 4.59, -0.50, 0.99, 4.31, -1.53, 0};
+    flipped_arm2_pose_1 = {0.68, 1.40, -0.47, 0.95, 4.31, -1.53, 0};
+    flipped_arm1_pose_2 = {1.18, 4.59, -0.50, -1.0, 4.31, -1.53, 0};
+    flipped_arm2_pose_2 = {1.18, 1.40, -0.65, 1.80, 5.05, -0.10, 0};
+    flipped_arm1_pose_3 = {1.18, 1.40, -0.65, 1.80, 5.05, -0.10, 0};
 
 
     offset_ = 0.025;
@@ -73,8 +79,12 @@ robot_move_group_2(robot_controller_options_2) {
     gripper_subscriber_2 = gripper_nh_2.subscribe(
             "/ariac/arm2/gripper/state", 10, &RobotController::GripperCallback2, this);
 
-    SendRobotPosition(home_joint_pose_1);
-    SendRobotPosition2(home_joint_pose_2);
+
+    // SendRobotPosition2(home_joint_pose_2);
+    // SendRobotPosition2(flipped_arm2_pose_1);
+    // SendRobotPosition(home_joint_pose_1);
+    SendRobot1();
+    SendRobot2();
 
     robot_tf_listener_.waitForTransform("arm1_linear_arm_actuator", "arm1_ee_link",
                                             ros::Time(0), ros::Duration(10));
@@ -160,25 +170,39 @@ RobotController::~RobotController() {}
  *
  * @return
  */
-bool RobotController::Planner() {
-    ROS_INFO_STREAM("Planning started...");
+bool RobotController::Planner1() {
+    ROS_INFO_STREAM("Planning 1 started...");
     if (robot_move_group_.plan(robot_planner_) ==
         moveit::planning_interface::MoveItErrorCode::SUCCESS) {
         plan_success_ = true;
-        ROS_INFO_STREAM("Planner succeeded!");
+        ROS_INFO_STREAM("Planner 1 succeeded!");
     } else {
         plan_success_ = false;
-        ROS_WARN_STREAM("Planner failed!");
+        ROS_WARN_STREAM("Planner 1 failed!");
     }
 
     return plan_success_;
 }
 
+// bool RobotController::Planner2() {
+//     ROS_INFO_STREAM("Planning 2 started...");
+//     if (robot_move_group_2.plan(robot_planner_2) ==
+//         moveit::planning_interface::MoveItErrorCode::SUCCESS) {
+//         plan_success_2 = true;
+//         ROS_INFO_STREAM("Planner 2 succeeded!");
+//     } else {
+//         plan_success_2 = false;
+//         ROS_WARN_STREAM("Planner 2 failed!");
+//     }
+//
+//     return plan_success_2;
+// }
+
 
 void RobotController::Execute() {
     ros::AsyncSpinner spinner(4);
     spinner.start();
-    if (this->Planner()) {
+    if (this->Planner1()) {
         robot_move_group_.move();
         ros::Duration(0.5).sleep();
     }
@@ -197,7 +221,7 @@ void RobotController::GoToTarget(const geometry_msgs::Pose& pose, int f) {
     ros::AsyncSpinner spinner(4);
     robot_move_group_.setPoseTarget(target_pose_);
     spinner.start();
-    if (this->Planner()) {
+    if (this->Planner1()) {
         robot_move_group_.move();
         ros::Duration(0.5).sleep();
     }
@@ -249,12 +273,16 @@ void RobotController::GoToTarget(
 
 void RobotController::SendRobotPosition(std::vector<double> pose) {
     // ros::Duration(2.0).sleep();
+    ROS_INFO_STREAM("Running SendRobotPosition");
+    ROS_INFO_STREAM("Arm1 Should go to: 1.18");
     robot_move_group_.setJointValueTarget(pose);
+    // robot_move_group_2.setJointValueTarget(flipped_arm2_pose_1);
     // this->execute();
     ros::AsyncSpinner spinner(4);
     spinner.start();
-    if (this->Planner()) {
+    if (this->Planner1()) {
         robot_move_group_.move();
+        // robot_move_group_2.move();
         ros::Duration(1.5).sleep();
     }
      ros::Duration(0.5).sleep();
@@ -262,11 +290,13 @@ void RobotController::SendRobotPosition(std::vector<double> pose) {
 
 void RobotController::SendRobotPosition2(std::vector<double> pose) {
     // ros::Duration(2.0).sleep();
+    ROS_INFO_STREAM("Running SendRobotPosition2");
+    ROS_INFO_STREAM("Arm2 Should go to: -1.18");
     robot_move_group_2.setJointValueTarget(pose);
     // this->execute();
     ros::AsyncSpinner spinner(4);
     spinner.start();
-    if (this->Planner()) {
+    if (this->Planner1()) {
         robot_move_group_2.move();
         ros::Duration(1.5).sleep();
     }
@@ -306,7 +336,8 @@ bool RobotController::DropPart(geometry_msgs::Pose part_pose, int agv_id) {
     // ROS_WARN_STREAM("Dropping the part number: " << counter_);
     ROS_INFO_STREAM("Moving to end of conveyor...");
     SendRobotPosition(kit_drop_pose_);
-
+    // this->GripperToggle2(true);
+    // SendRobotPosition(flipped_drop_pose_);
     // robot_move_group_.setJointValueTarget(kit_drop_pose_);
     // this->Execute();
     ros::Duration(1.0).sleep();
@@ -322,7 +353,7 @@ bool RobotController::DropPart(geometry_msgs::Pose part_pose, int agv_id) {
     ROS_INFO_STREAM("Checking if part if faulty");
     ros::Duration(1.0).sleep();
     ros::spinOnce();
-    if(is_faulty_ ) {  
+    if(is_faulty_ ) {
         ROS_INFO_STREAM("Rejecting Part");
         //  Pick the Part Again
         part_pose.position.z -= 0.1;
@@ -342,7 +373,7 @@ bool RobotController::DropPart(geometry_msgs::Pose part_pose, int agv_id) {
     drop = true;
     // ROS_WARN_STREAM("Dropping the part number: " << counter_);
     ROS_INFO_STREAM("Moving to end of conveyor...");
-    SendRobotPosition2(kit_drop_pose_);
+    SendRobotPosition2(kit_drop_pose_2);
 
     // robot_move_group_.setJointValueTarget(kit_drop_pose_);
     // this->Execute();
@@ -355,16 +386,16 @@ bool RobotController::DropPart(geometry_msgs::Pose part_pose, int agv_id) {
     this->GoToTarget({temp_pose, part_pose},0);
     // ros::Duration(0.5).sleep();
     this->GripperToggle2(false);
-    SendRobotPosition2(kit_drop_pose_);
+    SendRobotPosition2(kit_drop_pose_2);
     ROS_INFO_STREAM("Checking if part if faulty");
     ros::Duration(1.0).sleep();
     ros::spinOnce();
-    if(is_faulty_ ) {  
+    if(is_faulty_ ) {
         ROS_INFO_STREAM("Rejecting Part");
         //  Pick the Part Again
         part_pose.position.z -= 0.1;
         PickPart(part_pose, 2);
-        SendRobotPosition2(kit_drop_pose_);
+        SendRobotPosition2(kit_drop_pose_2);
         this->GripperToggle2(false);
         ros::Duration(1.0).sleep();
         drop =false;
@@ -531,7 +562,7 @@ bool RobotController::PickPartconveyor(std::string product){
   // ros::spin();
   while(ros::ok())
   {
-    // ros::Subscriber logical_camera_subscriber_7 = node.subscribe("/ariac/logical_camera_7", 10, 
+    // ros::Subscriber logical_camera_subscriber_7 = node.subscribe("/ariac/logical_camera_7", 10,
     //           &AriacSensorManager::LogicalCamera7Callback, &AriacSensorManager);
     // ROS_INFO_STREAM("Inside...");
     // ROS_INFO_STREAM_THROTTLE(2, "Grab now: "<< beam.grab_now_1);
@@ -557,8 +588,8 @@ bool RobotController::PickPartconveyor(std::string product){
       place_pose_.position.y = 1;
       place_pose_.position.z = 1.2;
       robot_move_group_.setPoseTarget(place_pose_);
-      robot_move_group_.move(); 
-      ROS_INFO_STREAM("place pose reached"); 
+      robot_move_group_.move();
+      ROS_INFO_STREAM("place pose reached");
       ros::Duration(0.5).sleep();
       this->GripperToggle(false);
     }
@@ -573,45 +604,9 @@ bool RobotController::PickPartconveyor(std::string product){
 }
 
 bool RobotController::PickPart(geometry_msgs::Pose& part_pose) {
-  // gripper_state = false;
-  // pick = true;
-  // ROS_INFO_STREAM("fixed_orientation_" << part_pose.orientation = fixed_orientation_);
-  // ROS_WARN_STREAM("Picking the part...");
-  // moveit::planning_interface::PlanningSceneInterface planning_scene_interface;
-  // moveit::planning_interface::MoveGroupInterface group(robot_controller_options);
-
-  // moveit_msgs::CollisionObject collision_object;
-  // collision_object.header.frame_id = robot_move_group_.getPlanningFrame();
-
-  // // The id of the object is used to identify it.
-  // collision_object.id = "box1";
-
-  // // Define a box to add to the world.
-  // shape_msgs::SolidPrimitive primitive;
-  // primitive.type = primitive.BOX;
-  // primitive.dimensions.resize(3);
-  // primitive.dimensions[0] = 0.6;
-  // primitive.dimensions[1] = 0.6;
-  // primitive.dimensions[2] = 0.55;
-
-  // // Define a pose for the box (specified relative to frame_id)
-  // geometry_msgs::Pose box_pose;
-  // box_pose.orientation.w = 1.0;
-  // box_pose.position.x = -0.3;
-  // box_pose.position.y = -1.916;
-  // box_pose.position.z = 0.45;
-
-  // collision_object.primitives.push_back(primitive);
-  // collision_object.primitive_poses.push_back(box_pose);
-  // collision_object.operation = collision_object.ADD;
-
-  // std::vector<moveit_msgs::CollisionObject> collision_objects;
-  // collision_objects.push_back(collision_object);
-  // ROS_INFO_NAMED("tutorial", "Add an object into the world");
-  // planning_scene_interface.applyCollisionObjects(collision_objects);
 
   ROS_INFO_STREAM("Moving to part...");
-  part_pose.position.z = part_pose.position.z + 0.033;
+  part_pose.position.z = part_pose.position.z + 0.043;
       // part_pose.position.x = part_pose.position.x - 0.02;
       // part_pose.position.y = part_pose.position.y - 0.02;
   auto temp_pose_1 = part_pose;
@@ -677,4 +672,28 @@ bool RobotController::DropPart(geometry_msgs::Pose part_pose) {
   SendRobotPosition2(home_joint_pose_2);
 
   return drop;
+}
+
+void RobotController::SendRobot1() {
+  robot_move_group_.setJointValueTarget(home_joint_pose_1);
+  // this->execute();
+  ros::AsyncSpinner spinner(4);
+  spinner.start();
+  if (this->Planner1()) {
+      robot_move_group_.move();
+      ros::Duration(1.5).sleep();
+  }
+   ros::Duration(0.5).sleep();
+}
+
+void RobotController::SendRobot2() {
+  robot_move_group_.setJointValueTarget(home_joint_pose_2);
+  // this->execute();
+  ros::AsyncSpinner spinner(4);
+  spinner.start();
+  if (this->Planner1()) {
+      robot_move_group_.move();
+      ros::Duration(1.5).sleep();
+  }
+   ros::Duration(0.5).sleep();
 }

@@ -43,6 +43,14 @@ public:
     std::string bin6_part;
     std::vector<std::string> bin_parts;
     std::string empty_bin;
+    std::vector<double> flipped_drop_pose_, flipped_arm1_pose_1,
+                        flipped_arm2_pose_1, flipped_arm1_pose_2,
+                        flipped_arm2_pose_2, flipped_arm1_pose_3,
+                        flipped_arm1_pose_4, flipped_arm1_pose_5,
+                        flipped_arm2_pose_3, flipped_arm1_pose_6,
+                        flipped_arm2_pose_4, kit_drop_pose_;
+    void FlippedPart(int agv_id, auto pose);
+    bool isFlipped = true;
 
 private:
     ros::NodeHandle order_manager_nh_;
@@ -52,8 +60,8 @@ private:
     std::vector<osrf_gear::Order> received_orders_;
     AriacSensorManager camera_;
     geometry_msgs::Pose bin_pose;
-    RobotController arm1_;
-    RobotController arm2_;
+    RobotController arm1_, arm2_;
+    // RobotController arm2_;
     tf::TransformListener part_tf_listener_;
     std::vector<double> drop_pose_;
     std::pair<std::string,geometry_msgs::Pose> product_type_pose_;
