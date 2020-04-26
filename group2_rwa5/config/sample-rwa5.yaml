@@ -46,7 +46,7 @@ orders:
           rpy: [0, 0, 0]
   order_0_update_0:
     announcement_condition: wanted_products
-    announcement_condition_value: 4
+    announcement_condition_value: 3
     shipment_count: 1
     products:
       product_0:
@@ -110,11 +110,11 @@ models_over_bins:
         num_models_y: 3
 
 belt_models:
-  disk_part:
+  pulley_part:
     10.0:
       pose:
         xyz: [0.0, 0.0, 0.1]
         rpy: [0, 0, 'pi/2']
 
 faulty_products:
-  - disk_part_0
+  - pulley_part_0

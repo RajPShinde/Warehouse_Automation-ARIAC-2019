@@ -153,11 +153,11 @@ bool AriacOrderManager::PickAndPlace(const std::pair<std::string,geometry_msgs::
 
 
     if(product_type == "pulley_part")
-        part_pose.position.z += 0.08;
+        part_pose.position.z += 0.037;
     if(product_type == "piston_rod_part")
         part_pose.position.z -= 0.0155;
     if(product_type == "gear_part")
-        part_pose.position.z -= 0.011;
+        part_pose.position.z -= 0.0112;
     if(product_type == "disk_part")
         part_pose.position.z = part_pose.position.z;
     if(product_type == "gasket_part")
@@ -415,11 +415,19 @@ void AriacOrderManager::dropallparts(std::vector<std::pair<std::string,geometry_
 
     if (agv_id == 1) {
       drop_pose_ = {2.4, 1.57, -1.60, 2.0, 4.30, -1.53, 0};
+      if(placed_parts[i].first=="pulley_part")
+      {
+        placed_parts[i].second.position.z +=0.03;
+      }
       arm1_.PickPart(placed_parts[i].second, agv_id);
       arm1_.SendRobotPosition(drop_pose_);
       arm1_.GripperToggle(false);
     } else {
-      drop_pose_ = {-0.89, -2.11, -1.60, 2.0, 4.30, -1.53, 0};
+      drop_pose_ = {-2.4, -1.57, -1.60, 2.0, 4.30, -1.53, 0};
+      if(placed_parts[i].first=="pulley_part")
+      {
+        placed_parts[i].second.position.z +=0.03;
+      }
       arm2_.PickPart(placed_parts[i].second, agv_id);
       arm2_.SendRobotPosition(drop_pose_);
       arm2_.GripperToggle2(false);
@@ -458,25 +466,48 @@ bool AriacOrderManager::checkOrderUpdate(int i,int diff, std::string order_id, i
             int new_agv_id = (var1.agv_id == "any") ? 1 : new_agv - '0';
             auto new_products = var1.products;
             
-            int parts_in_order=0;
-            int parts_already_placed=0;
-            bool all_different=false;
+            std::vector<std::pair<std::string,geometry_msgs::Pose>> new_parts;
             std::vector<std::pair<std::string,geometry_msgs::Pose>> present;
-            std::vector<std::pair<std::string,geometry_msgs::Pose>> present_wrong_location;
+            std::vector<std::pair<std::string,geometry_msgs::Pose>> new_placed_parts;
+            std::vector<std::pair<std::string,geometry_msgs::Pose>> remaining;
+            std::vector<std::pair<std::string,geometry_msgs::Pose>> shuffle_from;
+            std::vector<std::pair<std::string,geometry_msgs::Pose>> shuffle_to;
             std::vector<std::pair<std::string,geometry_msgs::Pose>> parts_to_remove;
+            geometry_msgs::Pose temp,temp1,vacant,slider,slider2;
+            int pulley,gasket,piston,gear,disk,n_pulley,n_gasket,n_piston,n_gear,n_disk=0;
+            int space=0;
+            int interchange=0;
 
-            // Check which parts exist at same location in new order
-            // Check which parts are at diffrent locations (Can be shuffled)
+            // Find which parts exist at same location in new order
             geometry_msgs::PoseStamped StampedPose_in, StampedPose_out;
-            if(new_agv_id==agv_id)
-            {
-            for (const auto &p: new_products)
-            {
-              parts_in_order++; 
+            geometry_msgs::PoseStamped Pose_in, Pose_out;
+        if(new_agv_id==agv_id)
+        {
+              for (const auto &p: new_products)
+              {
+              if(agv_id==1)
+              {
               StampedPose_in.header.frame_id = "/kit_tray_1";
+              }
+              else
+              {
+              StampedPose_in.header.frame_id = "/kit_tray_2";              
+              }
               StampedPose_in.pose = p.pose;
               part_tf_listener_.transformPose("/world",StampedPose_in,StampedPose_out);
+              new_parts.push_back(std::make_pair(p.type,StampedPose_out.pose));
               auto h=std::make_pair(p.type,StampedPose_out.pose);
+              if(p.type=="pulley_part")
+                n_pulley +=1;
+              else if(p.type=="gasket_part")
+                n_gasket +=1;
+              else if(p.type=="piston_part")
+                n_piston +=1;
+              else if(p.type=="gear_part")
+                n_gear +=1;
+              else if(p.type=="disk_part")
+                n_disk +=1;
+
               for(int q=0;q<placed_parts.size();q++)
               {
                 if(placed_parts[q].first==p.type && placed_parts[q].second==StampedPose_out.pose)
@@ -488,21 +519,162 @@ bool AriacOrderManager::checkOrderUpdate(int i,int diff, std::string order_id, i
               }
             }
 
-            // Keep parts which are at right pose or can be shuffled
+            // Find Remaining parts
             for(int m=0;m<placed_parts.size();m++)
             {
                 if(std::find(present.begin(),present.end(),placed_parts[m])==present.end())
                 {
-                 parts_to_remove.push_back(std::make_pair(placed_parts[m].first,placed_parts[m].second));
+                if(placed_parts[m].first=="pulley_part")
+                  pulley +=1;
+                else if(placed_parts[m].first=="gasket_part")
+                  gasket +=1;
+                else if(placed_parts[m].first=="piston_part")
+                  piston +=1;
+                else if(placed_parts[m].first=="gear_part")
+                  gear +=1;
+                else if(placed_parts[m].first=="disk_part")
+                  disk +=1;
+                remaining.push_back(std::make_pair(placed_parts[m].first,placed_parts[m].second));
                 }
             }
-            dropallparts(parts_to_remove, agv_id);
-            ROS_INFO_STREAM("placed_parts:-"<<placed_parts.size());
-            placed_parts.clear();
-            placed_parts=present;
-            ROS_INFO_STREAM("placed_parts:-"<<placed_parts.size());
-            return true;
 
+            // Find which parts can be suffled 
+            for(int b=0;b<new_parts.size();b++)
+            {
+                if(std::find(present.begin(),present.end(),new_parts[b])==present.end())
+                {
+                    for(int n=0;n<remaining.size();n++)
+                    {
+                        if(remaining[n].first==new_parts[b].first)
+                        {
+                            shuffle_from.push_back(std::make_pair(remaining[n].first,remaining[n].second));
+                            shuffle_to.push_back(std::make_pair(remaining[n].first,new_parts[b].second));
+                            remaining.erase(remaining.begin()+n);
+                        }
+                        break;
+                    }
+                }
+                
+            }
+            ROS_INFO_STREAM("AAAAAAAAA"<<shuffle_from.size());
+            ROS_INFO_STREAM("AAAAAAAAA"<<shuffle_to.size());
+            ROS_INFO_STREAM("YY"<<remaining.size());
+
+            // Find Parts which can be removed
+            if(remaining.size()>0)
+            {
+            dropallparts(remaining, agv_id);
+            // space=1;
+            }
+
+            // Shuffle parts
+            if(shuffle_from.size()>0)
+            {
+                  for(int e=0;e<shuffle_to.size();e++)
+                  {
+                    for(int d=0;d<shuffle_from.size();d++)
+                    {
+                        if(shuffle_to[e].second==shuffle_from[d].second && e!=d)
+                        {
+                          temp=shuffle_from[e].second;
+                          temp1=shuffle_from[d].second;
+                          if(agv_id==1)
+                          {
+                            arm1_.PickPart(shuffle_from[d].second,1);
+                          }
+                          else
+                          {
+                            arm2_.PickPart(shuffle_from[d].second,2);
+                          }
+                          interchange=1;
+                          break;
+                        }
+
+                    }
+                    // To swap
+                    if(interchange==1)
+                    {
+                        if(space==0)
+                        {
+                          slider=temp1;
+                          slider2=temp1;
+                          if(agv_id==1)
+                          {
+                            slider.position.x=0.31;
+                            slider.position.y=1.42;
+                            slider.position.z=0.94;
+                            arm1_.DropPart(slider,1);
+                            arm1_.PickPart(shuffle_from[e].second,1);
+                            arm1_.DropPart(shuffle_to[e].second,1);
+                            arm1_.PickPart(slider,1);
+                            arm1_.DropPart(shuffle_from[e].second,1);
+                          }
+                        else
+                          {
+                            slider2.position.x=0.31;
+                            slider2.position.y=-1.42;
+                            slider2.position.z=0.94;
+                            arm2_.DropPart(slider2,2);
+                            arm2_.PickPart(shuffle_from[e].second,2);
+                            arm2_.DropPart(shuffle_to[e].second,2);
+                            arm2_.PickPart(slider,2);
+                            arm2_.DropPart(shuffle_from[e].second,2);
+                          }
+                         
+                        }
+                        else
+                        {
+                          if(agv_id==1)
+                          {
+                            arm1_.DropPart(vacant,1);
+                            arm1_.PickPart(shuffle_from[e].second,1);
+                            arm1_.DropPart(shuffle_to[e].second,1);
+                            arm1_.PickPart(vacant,1);
+                            arm1_.DropPart(shuffle_from[e].second,1);
+                          }
+                        else
+                          {
+                            arm2_.DropPart(vacant,2);
+                            arm2_.PickPart(shuffle_from[e].second,2);
+                            arm2_.DropPart(shuffle_to[e].second,2);
+                            arm2_.PickPart(vacant,2);
+                            arm2_.DropPart(shuffle_from[e].second,2);
+                          }
+                        }
+                        interchange=0;
+                    }
+                    // To just keep
+                    else
+                    {
+                        if(agv_id==1)
+                          {
+                            arm1_.PickPart(shuffle_from[e].second,1);
+                            arm1_.DropPart(shuffle_to[e].second,1);
+                          }
+                        else
+                          {
+                            arm2_.PickPart(shuffle_from[e].second,1);
+                            arm2_.DropPart(shuffle_to[e].second,2);
+                          }
+                    }
+                  }
+
+                
+            }
+            
+            // Update PLaced Parts List
+            if(present.size()>0 || shuffle_from.size()>0)
+            {
+                placed_parts.clear();
+                placed_parts=present;
+                for(int y=0;y<shuffle_to.size();y++)
+                {
+                    placed_parts.push_back(std::make_pair(shuffle_to[y].first,shuffle_to[y].second));
+                }
+
+            }
+            ROS_INFO_STREAM("LLLLLLLLLLL"<<placed_parts.size());
+            return true;
         }
 
 
@@ -530,14 +702,15 @@ bool AriacOrderManager::PickAndPlace(std::pair<std::string,geometry_msgs::Pose> 
     std::string product_frame = GetProductFrame(product_type);
 
     auto part_pose = camera_.GetPartPose("/world", product_frame);
+    ROS_INFO_STREAM("PARRT"<<product_type);
 
 
     if(product_type == "pulley_part")
-        part_pose.position.z += 0.08;
+        part_pose.position.z += 0.037;
     if(product_type == "piston_rod_part")
         part_pose.position.z -= 0.0158;
     if(product_type == "gear_part")
-        part_pose.position.z -= 0.011;
+        part_pose.position.z -= 0.0112;
     if(product_type == "disk_part")
         part_pose.position.z = part_pose.position.z;
     if(product_type == "gasket_part")
@@ -592,11 +765,11 @@ void AriacOrderManager::OutOfReach(std::string arm, std::string num, std::pair<s
 
   // bool pick_n_place_success_1 =  arm1_.PickPart(product_type_pose_, agv_id);
   if(product.first == "pulley_part")
-      part_pose.position.z += 0.08;
+      part_pose.position.z += 0.037;
   if(product.first == "piston_rod_part")
       part_pose.position.z -= 0.0158;
   if(product.first == "gear_part")
-      part_pose.position.z -= 0.011;
+      part_pose.position.z -= 0.0112;
   if(product.first == "disk_part")
       part_pose.position.z = part_pose.position.z;
   if(product.first == "gasket_part")

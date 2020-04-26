@@ -399,38 +399,7 @@ bool RobotController::PickPart(geometry_msgs::Pose& part_pose, int agv_id) {
     // pick = true;
     //ROS_INFO_STREAM("fixed_orientation_" << part_pose.orientation = fixed_orientation_);
     //ROS_WARN_STREAM("Picking the part...");
-    moveit::planning_interface::PlanningSceneInterface planning_scene_interface;
-  moveit::planning_interface::MoveGroupInterface group(robot_controller_options);
 
-  moveit_msgs::CollisionObject collision_object;
-  collision_object.header.frame_id = robot_move_group_.getPlanningFrame();
-
-  // The id of the object is used to identify it.
-  collision_object.id = "box1";
-
-  // Define a box to add to the world.
-  shape_msgs::SolidPrimitive primitive;
-  primitive.type = primitive.BOX;
-  primitive.dimensions.resize(3);
-  primitive.dimensions[0] = 0.6;
-  primitive.dimensions[1] = 0.6;
-  primitive.dimensions[2] = 0.55;
-
-  // Define a pose for the box (specified relative to frame_id)
-  geometry_msgs::Pose box_pose;
-  box_pose.orientation.w = 1.0;
-  box_pose.position.x = -0.3;
-  box_pose.position.y = -1.916;
-  box_pose.position.z = 0.45;
-
-  collision_object.primitives.push_back(primitive);
-  collision_object.primitive_poses.push_back(box_pose);
-  collision_object.operation = collision_object.ADD;
-
-  std::vector<moveit_msgs::CollisionObject> collision_objects;
-  collision_objects.push_back(collision_object);
-  ROS_INFO_NAMED("tutorial", "Add an object into the world");
-   planning_scene_interface.applyCollisionObjects(collision_objects);
 
     ROS_INFO_STREAM("Moving to part...");
     if (agv_id == 1) {
