@@ -51,6 +51,9 @@ public:
     bool PickPartconveyor(std::string);
     void sendRobotToConveyor();
     void SendRobotHome1();
+    bool PickPartConveyor(std::string part_name, std::vector<std::string> parts_already_in_bin, 
+                            std::vector<std::string> bins_arm1, std::vector<std::string> bins_arm2,
+                            std::vector<std::string> bin_part);
 
 
 private:

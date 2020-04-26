@@ -77,6 +77,7 @@ public:
     std::string LogicalCamera4PartType();
     std::string LogicalCamera5PartType();
     std::string LogicalCamera6PartType();
+    std::string BeltCameraPart();
     geometry_msgs::Pose BinGetPartPose(const std::string& src_frame,
                                                            std::string product_type, std::string num);
 

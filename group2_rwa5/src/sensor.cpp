@@ -516,6 +516,16 @@ std::string AriacSensorManager::LogicalCamera6PartType(){
     return cam6_part_type;
  }
 
+ std::string AriacSensorManager::BeltCameraPart(){
+    if(logical7_ == ""){
+        cam7_part_type = 'n';
+    }
+    else{
+        cam7_part_type = logical7_;
+    }
+    return cam7_part_type;
+ }
+
  geometry_msgs::Pose AriacSensorManager::BinGetPartPose(const std::string& src_frame,
                                                         std::string product_type, std::string num) {
      geometry_msgs::Pose part_pose;

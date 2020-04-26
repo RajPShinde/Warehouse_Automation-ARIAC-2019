@@ -78,39 +78,52 @@ void AriacOrderManager::OrderCallback(const osrf_gear::Order::ConstPtr& order_ms
             }
             
             ROS_INFO_STREAM("Part read from bin 1: " << bin1_part);
+            bin_part.push_back(bin1_part);
             ROS_INFO_STREAM("Part read from bin 2: " << bin2_part);
+            bin_part.push_back(bin2_part);
             ROS_INFO_STREAM("Part read from bin 3: " << bin3_part);
+            bin_part.push_back(bin3_part);
             ROS_INFO_STREAM("Part read from bin 4: " << bin4_part);
+            bin_part.push_back(bin4_part);
             ROS_INFO_STREAM("Part read from bin 5: " << bin5_part);
+            bin_part.push_back(bin5_part);
             ROS_INFO_STREAM("Part read from bin 6: " << bin6_part);
+            bin_part.push_back(bin6_part);
+
             if(bin1_part == "n"){
                 empty_bins.push_back("bin1");
                 bin1_poses = FillBin(1, "piston_rod_part");
+                bins_arm2.push_back("bin1");
                 // all_empty_bins_pose.push_back(empty_bin_poses);
             }
             if(bin2_part == "n"){
                 empty_bins.push_back("bin2");
                 bin2_poses = FillBin(2, "piston_rod_part");
+                bins_arm2.push_back("bin2");
                 // all_empty_bins_pose.push_back(empty_bin_poses);
             }
             if(bin3_part == "n"){
                 empty_bins.push_back("bin3");
                 bin3_poses = FillBin(3, "piston_rod_part");
+                bins_arm2.push_back("bin3");
                 // all_empty_bins_pose.push_back(empty_bin_poses);
             }
             if(bin4_part == "n"){
                 empty_bins.push_back("bin4");
                 bin4_poses = FillBin(4, "piston_rod_part");
+                bins_arm1.push_back("bin4");
                 // all_empty_bins_pose.push_back(empty_bin_poses);
             }
             if(bin5_part == "n"){
                 empty_bins.push_back("bin5");
                 bin5_poses = FillBin(5, "piston_rod_part");
+                bins_arm1.push_back("bin5");
                 // all_empty_bins_pose.push_back(empty_bin_poses);
             }
             if(bin6_part == "n"){
                 empty_bins.push_back("bin6");
                 bin6_poses = FillBin(6, "piston_rod_part");
+                bins_arm1.push_back("bin6");
                 // all_empty_bins_pose.push_back(empty_bin_poses);
             }
             
@@ -120,6 +133,7 @@ void AriacOrderManager::OrderCallback(const osrf_gear::Order::ConstPtr& order_ms
             else{
                 ROS_INFO_STREAM("Checking available points, as follows: ");
                 bin1_poses = FillBin(1, bin1_part);
+                parts_already_in_bin.push_back(bin1_part);
                 // ROS_INFO_STREAM(bin1_poses[0]);
             }
             if(std::find(empty_bins.begin(), empty_bins.end(), "bin2") != empty_bins.end()){
@@ -128,6 +142,7 @@ void AriacOrderManager::OrderCallback(const osrf_gear::Order::ConstPtr& order_ms
             else{
                 ROS_INFO_STREAM("Checking available points, as follows: ");
                 bin2_poses = FillBin(2, bin2_part);
+                parts_already_in_bin.push_back(bin2_part);
                 // ROS_INFO_STREAM(bin1_poses[0]);
             }
             if(std::find(empty_bins.begin(), empty_bins.end(), "bin3") != empty_bins.end()){
@@ -136,6 +151,7 @@ void AriacOrderManager::OrderCallback(const osrf_gear::Order::ConstPtr& order_ms
             else{
                 ROS_INFO_STREAM("Checking available points, as follows: ");
                 bin3_poses = FillBin(3, bin3_part);
+                parts_already_in_bin.push_back(bin3_part);
                 // ROS_INFO_STREAM(bin1_poses[0]);
             }
             if(std::find(empty_bins.begin(), empty_bins.end(), "bin4") != empty_bins.end()){
@@ -144,6 +160,7 @@ void AriacOrderManager::OrderCallback(const osrf_gear::Order::ConstPtr& order_ms
             else{
                 ROS_INFO_STREAM("Checking available points, as follows: ");
                 bin4_poses = FillBin(4, bin4_part);
+                parts_already_in_bin.push_back(bin4_part);
                 // ROS_INFO_STREAM(bin1_poses[0]);
                 // ROS_INFO_STREAM("Bin4 poses trial: " << bin4_poses[0]);
             }
@@ -153,6 +170,7 @@ void AriacOrderManager::OrderCallback(const osrf_gear::Order::ConstPtr& order_ms
             else{
                 ROS_INFO_STREAM("Checking available points, as follows: ");
                 bin5_poses = FillBin(5, bin5_part);
+                parts_already_in_bin.push_back(bin5_part);
                 // ROS_INFO_STREAM(bin1_poses[0]);
             }
             if(std::find(empty_bins.begin(), empty_bins.end(), "bin6") != empty_bins.end()){
@@ -161,6 +179,7 @@ void AriacOrderManager::OrderCallback(const osrf_gear::Order::ConstPtr& order_ms
             else{
                 ROS_INFO_STREAM("Checking available points, as follows: ");
                 bin6_poses = FillBin(6, bin6_part);
+                parts_already_in_bin.push_back(bin6_part);
                 // ROS_INFO_STREAM(bin1_poses[0]);
             }
 
@@ -191,11 +210,22 @@ std::string AriacOrderManager::GetProductFrame(std::string product_type) {
          ROS_INFO_STREAM("Getting " << product_type << " from the conveyor Belt");
 //		else return "NOO";
 
-         bool failed_pick = arm1_.PickPartconveyor(product_type);
-		 while(!failed_pick){
-			 failed_pick = arm1_.PickPartconveyor(product_type);  //robot_controller
-             // FillBin("/world", product_type);
-		 }
+         // bool failed_pick = arm1_.PickPartconveyor(product_type);
+         bool failed_pick = arm1_.PickPartConveyor(product_type, parts_already_in_bin, bins_arm1, bins_arm2, bin_part);
+            while(!failed_pick){
+                failed_pick = arm1_.PickPartConveyor(product_type, parts_already_in_bin, bins_arm1, bins_arm2, bin_part);  //robot_controller
+            }
+         // std::string part_on_belt = camera_.BeltCameraPart();
+         // ROS_INFO_STREAM_THROTTLE(10, "Part on belt: " << part_on_belt);
+         // if(part_on_belt != "n"){
+         //    bool failed_pick = arm1_.PickPartConveyor(part_on_belt, parts_already_in_bin, bins_arm1, bins_arm2, bin_part);
+         //    while(!failed_pick){
+         //        failed_pick = arm1_.PickPartConveyor(part_on_belt, parts_already_in_bin, bins_arm1, bins_arm2, bin_part);  //robot_controller
+         //        // FillBin("/world", product_type);
+         //    }  
+
+         // }
+         
             bin_pose.position.x=-0.2;
             bin_pose.position.y=-0.2;
             bin_pose.position.z=0.1;
@@ -659,6 +689,8 @@ std::vector<geometry_msgs::Pose> AriacOrderManager::FillBin(int bin_number, std:
     int count4 = camera_.count_bin4;
     int count5 = camera_.count_bin5;
     int count6 = camera_.count_bin6;
+    // std::vector<geometry_msgs::Pose> part_pose_wrt_bin1;
+    geometry_msgs::Pose part_pose_wrt_bin1;
 
     int iter_count = 0;
 
@@ -698,7 +730,7 @@ std::vector<geometry_msgs::Pose> AriacOrderManager::FillBin(int bin_number, std:
             std::string frame_product = "logical_camera_" + std::to_string(bin_number)+ "_" + bin1_part + "_" + std::to_string(i) + "_frame";
             auto part_pose = camera_.GetPartPose("/world", frame_product);
             std::string bin_frame = "/bin" + std::to_string(bin_number) + "_frame";
-            auto part_pose_wrt_bin1 = camera_.GetPartPose(bin_frame, frame_product);
+            part_pose_wrt_bin1 = camera_.GetPartPose(bin_frame, frame_product);
             ROS_INFO_STREAM("From fillbin pose: "<<part_pose_wrt_bin1);            
             position_x.push_back(part_pose_wrt_bin1.position.x);
             position_y.push_back(part_pose_wrt_bin1.position.y);
@@ -732,7 +764,7 @@ std::vector<geometry_msgs::Pose> AriacOrderManager::FillBin(int bin_number, std:
 
         //vertical, single line
         if(vertical_flag_single){
-            ROS_INFO_STREAM("Max Y: " << max_y);
+            // ROS_INFO_STREAM("Max Y: " << max_y);
             if(max_y >= 0){
                 ROS_INFO_STREAM("Parts in single file RHS");
                 position_available_bin1.erase(position_available_bin1.begin(), position_available_bin1.end());
@@ -742,10 +774,12 @@ std::vector<geometry_msgs::Pose> AriacOrderManager::FillBin(int bin_number, std:
                     new_place_pose.position.x = max_x;
                     new_place_pose.position.y = max_y - 0.2;
                     new_place_pose.position.z = 0.005;
+                    new_place_pose.orientation = part_pose_wrt_bin1.orientation;
                     position_available_bin1.push_back(new_place_pose);
                     new_place_pose.position.x = min_x;
                     new_place_pose.position.y = max_y - 0.2;
                     new_place_pose.position.z = 0.005;
+                    new_place_pose.orientation = part_pose_wrt_bin1.orientation;
                     position_available_bin1.push_back(new_place_pose);
                     max_y = max_y - 0.2;
                     min_y = min_y - 0.2;
@@ -761,10 +795,12 @@ std::vector<geometry_msgs::Pose> AriacOrderManager::FillBin(int bin_number, std:
                     new_place_pose.position.x = max_x;
                     new_place_pose.position.y = max_y + 0.2;
                     new_place_pose.position.z = 0.005;
+                    new_place_pose.orientation = part_pose_wrt_bin1.orientation;
                     position_available_bin1.push_back(new_place_pose);
                     new_place_pose.position.x = min_x;
                     new_place_pose.position.y = max_y + 0.2;
                     new_place_pose.position.z = 0.005;
+                    new_place_pose.orientation = part_pose_wrt_bin1.orientation;
                     position_available_bin1.push_back(new_place_pose);
                     max_y = max_y + 0.2;
                     min_y = min_y + 0.2;
@@ -782,9 +818,13 @@ std::vector<geometry_msgs::Pose> AriacOrderManager::FillBin(int bin_number, std:
                     //todo - diff thresholds for different part types
                     new_place_pose.position.x = max_x - 0.2;
                     new_place_pose.position.y = max_y;
+                    new_place_pose.position.z = 0.005;
+                    new_place_pose.orientation = part_pose_wrt_bin1.orientation;
                     position_available_bin1.push_back(new_place_pose);
                     new_place_pose.position.x = max_x - 0.2;
                     new_place_pose.position.y = min_y;
+                    new_place_pose.position.z = 0.005;
+                    new_place_pose.orientation = part_pose_wrt_bin1.orientation;
                     position_available_bin1.push_back(new_place_pose);
                     max_x = max_x - 0.2;
                     min_x = min_x - 0.2;
@@ -799,9 +839,13 @@ std::vector<geometry_msgs::Pose> AriacOrderManager::FillBin(int bin_number, std:
                     //todo - diff thresholds for different part types
                     new_place_pose.position.x = max_x + 0.2;
                     new_place_pose.position.y = max_y;
+                    new_place_pose.position.z = 0.005;
+                    new_place_pose.orientation = part_pose_wrt_bin1.orientation;
                     position_available_bin1.push_back(new_place_pose);
                     new_place_pose.position.x = max_x + 0.2;
                     new_place_pose.position.y = min_y;
+                    new_place_pose.position.z = 0.005;
+                    new_place_pose.orientation = part_pose_wrt_bin1.orientation;
                     position_available_bin1.push_back(new_place_pose);
                     max_x = max_x + 0.2;
                     min_x = min_x + 0.2;
@@ -814,45 +858,69 @@ std::vector<geometry_msgs::Pose> AriacOrderManager::FillBin(int bin_number, std:
             if(max_x > 0 and max_y > 0){
                 new_place_pose.position.x = max_x;
                 new_place_pose.position.y = -max_y;
+                new_place_pose.position.z = 0.005;
+                new_place_pose.orientation = part_pose_wrt_bin1.orientation;
                 position_available_bin1.push_back(new_place_pose);
                 new_place_pose.position.x = -max_x;
                 new_place_pose.position.y = -max_y;
+                new_place_pose.position.z = 0.005;
+                new_place_pose.orientation = part_pose_wrt_bin1.orientation;
                 position_available_bin1.push_back(new_place_pose);
                 new_place_pose.position.x = -max_x;
                 new_place_pose.position.y = max_y;
+                new_place_pose.position.z = 0.005;
+                new_place_pose.orientation = part_pose_wrt_bin1.orientation;
                 position_available_bin1.push_back(new_place_pose);
             }
             if(max_x > 0 and max_y < 0){
                 new_place_pose.position.x = max_x;
                 new_place_pose.position.y = abs(max_y);
+                new_place_pose.position.z = 0.005;
+                new_place_pose.orientation = part_pose_wrt_bin1.orientation;
                 position_available_bin1.push_back(new_place_pose);
                 new_place_pose.position.x = -max_x;
                 new_place_pose.position.y = max_y;
+                new_place_pose.position.z = 0.005;
+                new_place_pose.orientation = part_pose_wrt_bin1.orientation;
                 position_available_bin1.push_back(new_place_pose);
                 new_place_pose.position.x = -max_x;
                 new_place_pose.position.y = abs(max_y);
+                new_place_pose.position.z = 0.005;
+                new_place_pose.orientation = part_pose_wrt_bin1.orientation;
                 position_available_bin1.push_back(new_place_pose);
             }
             if(max_x < 0 and max_y < 0){
                 new_place_pose.position.x = abs(max_x);
                 new_place_pose.position.y = abs(max_y);
+                new_place_pose.position.z = 0.005;
+                new_place_pose.orientation = part_pose_wrt_bin1.orientation;
                 position_available_bin1.push_back(new_place_pose);
                 new_place_pose.position.x = abs(max_x);
                 new_place_pose.position.y = max_y;
+                new_place_pose.position.z = 0.005;
+                new_place_pose.orientation = part_pose_wrt_bin1.orientation;
                 position_available_bin1.push_back(new_place_pose);
                 new_place_pose.position.x = max_x;
                 new_place_pose.position.y = abs(max_y);
+                new_place_pose.position.z = 0.005;
+                new_place_pose.orientation = part_pose_wrt_bin1.orientation;
                 position_available_bin1.push_back(new_place_pose);
             }
             if(max_x < 0 and max_y > 0){
                 new_place_pose.position.x = abs(max_x);
                 new_place_pose.position.y = abs(max_y);
+                new_place_pose.position.z = 0.005;
+                new_place_pose.orientation = part_pose_wrt_bin1.orientation;
                 position_available_bin1.push_back(new_place_pose);
                 new_place_pose.position.x = abs(max_x);
                 new_place_pose.position.y = max_y;
+                new_place_pose.position.z = 0.005;
+                new_place_pose.orientation = part_pose_wrt_bin1.orientation;
                 position_available_bin1.push_back(new_place_pose);
                 new_place_pose.position.x = max_x;
                 new_place_pose.position.y = -max_y;
+                new_place_pose.position.z = 0.005;
+                new_place_pose.orientation = part_pose_wrt_bin1.orientation;
                 position_available_bin1.push_back(new_place_pose);
             }
 

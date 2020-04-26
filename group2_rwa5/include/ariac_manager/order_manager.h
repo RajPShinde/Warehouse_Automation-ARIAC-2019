@@ -54,6 +54,10 @@ public:
     std::vector<geometry_msgs::Pose> bin4_poses;
     std::vector<geometry_msgs::Pose> bin5_poses;
     std::vector<geometry_msgs::Pose> bin6_poses;    
+    std::vector<std::string> bins_arm1;
+    std::vector<std::string> bins_arm2;
+    std::vector<std::string> parts_already_in_bin;
+    std::vector<std::string> bin_part;
 
 private:
     ros::NodeHandle order_manager_nh_;

@@ -575,6 +575,72 @@ while(!beam.getBeam())
     return gripper_state_;
 }*/
 
+//will require a vector of binparts, including "n"
+bool RobotController::PickPartConveyor(std::string part_name, std::vector<std::string> parts_already_in_bin, 
+                                      std::vector<std::string> bins_arm1, std::vector<std::string> bins_arm2, 
+                                      std::vector<std::string> bin_part){
+  bool present_flag = false;
+  bool empty_flag = false;
+  ROS_INFO_STREAM("Inside pick conveyor");
+
+  temp_pose_["shoulder_pan_joint"] = 0;
+  temp_pose_["shoulder_lift_joint"] = -0.5;
+  temp_pose_["elbow_joint"] = 0.5;
+  temp_pose_["wrist_1_joint"] = 0;
+  temp_pose_["wrist_2_joint"] = 0;
+  temp_pose_["wrist_3_joint"] = 0;
+  temp_pose_["linear_arm_actuator_joint"] = 0;
+
+  final_.orientation.w = 0.707;
+  final_.orientation.y = 0.707;
+  final_.position.x = 1.22;
+  final_.position.y = 1.9; //0.7 - 1.8
+  final_.position.z = 0.95;
+
+  // robot_move_group_.setJointValueTarget(temp_pose_);
+  // robot_move_group_.move();
+  // robot_move_group_2.setJointValueTarget(temp_pose_);
+  // robot_move_group_2.move();
+  // robot_move_group_.setJointValueTarget(final_);
+  // robot_move_group_.move();
+  if(std::find(parts_already_in_bin.begin(), parts_already_in_bin.end(), part_name) != parts_already_in_bin.end()){
+    ROS_INFO_STREAM("Part is present in one bin");
+    present_flag = true;
+  }
+  else{
+    ROS_INFO_STREAM("Part is not present in any bin");
+    empty_flag = true;
+  }
+
+  if(present_flag == true){
+    for(int i = 0; i < 6; i++){
+      if(bin_part[i] == part_name){
+        if((i+1) == 1 or (i+1) == 2 or (i+1) == 3){
+          ROS_INFO_STREAM("Arm2 for placing from bin: " << i+1);
+        }
+        else if((i+1) == 4 or (i+1) == 5 or (i+1) == 6){
+          ROS_INFO_STREAM("Arm1 for placing from bin: "<< i+1);
+        }
+      }
+    }
+
+  }
+  if(empty_flag == true){
+    for(int i = 0; i < 6; i++){
+      if(bin_part[i] == "n"){
+        if((i+1) == 1 or (i+1) == 2 or (i+1) == 3){
+          ROS_INFO_STREAM("Arm2 for placing in bin: " << i+1);
+        }
+        else if((i+1) == 4 or (i+1) == 5 or (i+1) == 6){
+          ROS_INFO_STREAM("Arm1 for placing in bin: " << i+1);
+        }
+
+      }
+    }
+  }
+  return false;
+}
+
 bool RobotController::PickPartconveyor(std::string product){
   ROS_INFO_STREAM("Inside pick_conv function");
   gripper_state_ = false;
