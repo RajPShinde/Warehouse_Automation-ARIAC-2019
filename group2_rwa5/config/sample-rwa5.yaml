@@ -7,6 +7,7 @@
 options:
   insert_models_over_bins: true
   spawn_extra_models: false
+  belt_population_cycles: 5
   model_type_aliases:
     order_part1: piston_rod_part
     order_part2: gear_part
@@ -16,6 +17,7 @@ orders:
   order_0:
     announcement_condition: time
     announcement_condition_value: 0.0
+    # destinations: agv0
     shipment_count: 1
     products:
       product_0:
@@ -45,7 +47,8 @@ orders:
           rpy: [0, 0, 0]
   order_0_update_0:
     announcement_condition: wanted_products
-    announcement_condition_value: 2
+    announcement_condition_value: 4
+    # destinations: agv0
     shipment_count: 1
     products:
       product_0:
@@ -107,3 +110,13 @@ models_over_bins:
         rpy: [0, 0, 'pi/4']
         num_models_x: 3
         num_models_y: 3
+
+belt_models:
+  pulley_part:
+    10.0:
+      pose:
+        xyz: [0.0, 0.0, 0.1]
+        rpy: [0, 0, 'pi/2']
+
+faulty_products:
+  - pulley_part_0
