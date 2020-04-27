@@ -3,6 +3,7 @@
 #include <osrf_gear/AGVControl.h>
 #include <ros/ros.h>
 #include <std_srvs/Trigger.h>
+#include <iomanip>
 
 AriacOrderManager::AriacOrderManager(): arm1_{"arm1"}, arm2_{"arm2"}
 {
@@ -20,8 +21,8 @@ AriacOrderManager::AriacOrderManager(): arm1_{"arm1"}, arm2_{"arm2"}
      * [6] = wrist_3_joint
      */
     flipped_arm1_pose_1 = {1.18, 4.59, -0.50, 0.99, 4.31, -1.53, 0};
-    flipped_arm1_pose_2 = {1.18, 4.59, -0.50, -1.0, 4.31, -1.53, 0};
-    flipped_arm1_pose_3 = {1.11, 4.59, -1.00, 1.32, 4.31, -1.53, 0};
+    flipped_arm1_pose_2 = {1.18, 4.59, -1.50, 1.32, 4.31, -1.53, 0};
+    flipped_arm1_pose_3 = {1.13, 4.56, -1.00, 1.34, 4.31, -1.53, 0};
     flipped_arm1_pose_4 = {1.11, 4.59, -1.00, 1.35, 4.31, -1.53, 0};
 
     // for agv_id = 2
@@ -30,9 +31,17 @@ AriacOrderManager::AriacOrderManager(): arm1_{"arm1"}, arm2_{"arm2"}
     flipped_arm2_pose_3 = {-0.59, 1.30, -1.37, 1.84, 4.10, -1.53, 0};
     flipped_arm2_pose_4 = {-0.59, 1.30, -1.37, 1.97, 4.10, -1.53, 0};
 
-    flipped_arm2_pose_1 = {0.68, 1.40, -0.47, 0.95, 4.31, -1.53, 0};
+    flipped_arm2_pose_1 = {0.69, 1.40, -0.47, 0.95, 4.31, -1.53, 0};
     flipped_arm2_pose_2 = {0.72, 1.40, -0.47, 0.85, 4.35, 1.51, 0};
     kit_drop_pose_ = {2.65, 1.57, -1.60, 2.0, 4.30, -1.53, 0};
+
+    // for out of reach agv_id = 2 and arm1 out of reach
+    out_arm2_pose1 = {-1.18, 1.43, -0.50, 0.95, 4.25, -1.54, 0};
+    out_arm2_pose2 = {-1.18, 1.43, -1.13, 1.22, 4.25, -1.53, 0};
+    out_arm2_pose3 = {-1.11, 1.43, -0.88, 1.09, 4.57, -1.54, 0};
+
+    out_arm1_pose1 = {-0.59, 4.58, -0.30, 0.64, 4.43, -1.53, 0};
+    out_arm1_pose2 = {-0.59, 4.58, -0.30, 0.49, 4.43, 1.61, 0};
 }
 
 AriacOrderManager::~AriacOrderManager(){}
@@ -191,7 +200,7 @@ bool AriacOrderManager::PickAndPlace(const std::pair<std::string,geometry_msgs::
     if (isFlipped) {
       FlippedPart(agv_id, part_pose);
     }
-    else if (agv_id == 1) {
+    else if (agv_id == 1 and isFlipped == false) {
       bool failed_pick = arm1_.PickPart(part_pose, agv_id);
     } else {
       home_joint_pose_1 = {1.18, 3.11, -1.60, 2.0, 4.30, -1.53, 0};
@@ -246,27 +255,8 @@ bool AriacOrderManager::PickAndPlace(const std::pair<std::string,geometry_msgs::
 
 }
 
-// flipped_arm1_pose_1 = {1.18, 4.59, -0.50, 0.99, 4.31, -1.53, 0};
-// flipped_arm1_pose_2 = {1.18, 4.59, -0.50, -1.0, 4.31, -1.53, 0};
-// flipped_arm1_pose_3 = {1.11, 4.59, -1.00, 1.32, 4.31, -1.53, 0};
-//
-// flipped_arm2_pose_1 = {0.68, 1.40, -0.47, 0.95, 4.31, -1.53, 0};
-// flipped_arm2_pose_2 = {0.68, 1.40, -0.47, 0.82, 4.35, 1.51, 0};
-// kit_drop_pose_ = {2.65, 1.57, -1.60, 2.0, 4.30, -1.53, 0};
-//
-// arm1_.SendRobotPosition(flipped_arm1_pose_1);
-// this->arm1_.GripperToggle(false);
-// // SendRobotPosition(flipped_arm1_pose_2);
-// arm1_.SendRobotPosition(flipped_arm1_pose_2);
-// this->arm2_.GripperToggle2(true);
-// arm2_.SendRobotPosition2(flipped_arm2_pose_1);
-// arm2_.SendRobotPosition2(flipped_arm2_pose_2);
-// this->arm1_.GripperToggle(true);
-// this->arm2_.GripperToggle2(false);
-// arm1_.SendRobotPosition(flipped_arm1_pose_3);
-
 void AriacOrderManager::FlippedPart(int agv_id, auto pose) {
-  if (agv_id == 1) {
+  if (agv_id == 1 and isReachable == true) {
     home_joint_pose_1 = {1.18, 3.11, -1.60, 2.0, 4.30, -1.53, 0};
     arm1_.SendRobotPosition(home_joint_pose_1);
     bool failed_pick = arm2_.PickPart(pose);
@@ -275,8 +265,9 @@ void AriacOrderManager::FlippedPart(int agv_id, auto pose) {
     arm1_.SendRobotPosition(flipped_arm1_pose_3);
     arm1_.SendRobotPosition(flipped_arm1_pose_4);
     this->arm2_.GripperToggle2(false);
+    arm2_.SendRobot2();
   }
-  if (agv_id == 2) {
+  if (agv_id == 2 and isReachable == true) {
     bool failed_pick = arm1_.PickPart(pose, 1);
     arm1_.SendRobotPosition(flipped_arm1_pose_5);
     arm1_.SendRobotPosition(flipped_arm1_pose_6);
@@ -284,6 +275,33 @@ void AriacOrderManager::FlippedPart(int agv_id, auto pose) {
     arm2_.SendRobotPosition2(flipped_arm2_pose_4);
     this->arm2_.GripperToggle2(true);
     this->arm1_.GripperToggle(false);
+    arm1_.SendRobot1();
+  }
+  if (agv_id == 1 and isReachable == false) {
+    bool failed_pick = arm1_.PickPart(pose, 1);
+    arm1_.SendRobotPosition(flipped_arm1_pose_1);
+    this->arm1_.GripperToggle(false);
+    arm1_.SendRobotPosition(flipped_arm1_pose_2);
+    this->arm2_.GripperToggle2(true);
+    arm2_.SendRobotPosition2(flipped_arm2_pose_1);
+    arm2_.SendRobotPosition2(flipped_arm2_pose_2);
+    this->arm1_.GripperToggle(true);
+    arm1_.SendRobotPosition(flipped_arm1_pose_3);
+    this->arm2_.GripperToggle2(false);
+    arm2_.SendRobot2();
+  }
+  if (agv_id == 2 and isReachable == false) {
+    bool failed_pick = arm2_.PickPart(pose);
+    arm2_.SendRobotPosition2(out_arm2_pose1);
+    this->arm2_.GripperToggle2(false);
+    this->arm1_.GripperToggle(true);
+    arm2_.SendRobotPosition2(out_arm2_pose2);
+    arm1_.SendRobotPosition(out_arm1_pose1);
+    arm1_.SendRobotPosition(out_arm1_pose2);
+    this->arm2_.GripperToggle2(true);
+    arm2_.SendRobotPosition2(out_arm2_pose3);
+    this->arm1_.GripperToggle(false);
+    arm1_.SendRobot1();
   }
 }
 
@@ -320,7 +338,7 @@ void AriacOrderManager::ExecuteOrder() {
             //-- if agv is any then we use AGV1, else we convert agv id to int
             //--agv-'0' converts '1' to 1 and '2' to 2
             ROS_INFO_STREAM(agv);
-            int agv_id = (shipment.agv_id == "any") ? 2 : agv - '0';
+            int agv_id = (shipment.agv_id == "any") ? 1 : agv - '0';
             auto products = shipment.products;
             ROS_INFO_STREAM("Order ID: " << order_id);
             ROS_INFO_STREAM("Shipment Type: " << shipment_type);
@@ -348,7 +366,20 @@ void AriacOrderManager::ExecuteOrder() {
                 product_type_pose_.first = product.type;
                 //ROS_INFO_STREAM("Product type: " << product_type_pose_.first);
                 product_type_pose_.second = product.pose;
-                ROS_INFO_STREAM("Product pose: " << product_type_pose_.second.position.x);
+                tf::quaternionMsgToTF(product.pose.orientation,q);
+                tf::Matrix3x3(q).getRPY(roll, pitch, yaw);
+                ROS_INFO_STREAM("Roll: " << roll);
+                // if (roll == -3.14159 || roll == 3.14159) {
+                //   ROS_INFO_STREAM("isFlipped made true");
+                //   isFlipped = true;
+                // }
+                isFlipped = true;
+                if (product.type == bin1_part and agv_id == 2 and isFlipped == true) {
+                  isReachable = false;
+                }
+                if (product.type == bin6_part and agv_id == 1 and isFlipped == true) {
+                  isReachable = false;
+                }
 
                 StampedPose_in.header.frame_id = "/kit_tray_1";
                 StampedPose_in.pose = product.pose;
@@ -364,7 +395,7 @@ void AriacOrderManager::ExecuteOrder() {
                     // product_frame_list_ = camera_.get_product_frame_list();
 //                bool pick_n_place_success = false;
 //                while (not pick_n_place_success){
-                if (product.type == bin1_part and agv_id == 1) {
+                if (product.type == bin1_part and agv_id == 1 and isFlipped == false) {
                   // bool pick_n_place_success = false;
                   // while (not pick_n_place_success){
                   std::string num;
@@ -376,10 +407,10 @@ void AriacOrderManager::ExecuteOrder() {
                     }
                   }
                    while(pick_n_place_success==false){
-                  pick_n_place_success =  PickAndPlace(product_type_pose_, empty_bin);
+                  pick_n_place_success =  PickAndPlace(product_type_pose_, empty_bin, agv_id);
               }
                OutOfReach("arm1", num, product_type_pose_, agv_id);
-                } else if(product.type == bin6_part and agv_id == 2) {
+             } else if(product.type == bin6_part and agv_id == 2 and isFlipped == false) {
                   std::string num;
                   for (int i = 0; i < bin_parts.size(); i++) {
                     if (bin_parts[i].empty() and i != 5) {
@@ -389,7 +420,7 @@ void AriacOrderManager::ExecuteOrder() {
                     }
                   }
                    while(pick_n_place_success==false){
-                  pick_n_place_success =  PickAndPlace(product_type_pose_, empty_bin);
+                  pick_n_place_success =  PickAndPlace(product_type_pose_, empty_bin, agv_id);
               }
                   OutOfReach("arm2", num, product_type_pose_, agv_id);
                 } else {
@@ -397,8 +428,8 @@ void AriacOrderManager::ExecuteOrder() {
                   pick_n_place_success =  PickAndPlace(product_type_pose_, agv_id);
                 }
                 }
-                ROS_INFO_STREAM(placed_parts.size());
-                ROS_INFO_STREAM(placed_parts[placed_parts.size()-1].first);
+                // ROS_INFO_STREAM(placed_parts.size());
+                // ROS_INFO_STREAM(placed_parts[placed_parts.size()-1].first);
                 pick_n_place_success=false;
             }
                 //--todo: What do we do if pick and place fails?
@@ -440,7 +471,7 @@ void AriacOrderManager::ExecuteOrder() {
             }
         }
         received_orders_.erase(received_orders_.begin());
-        ROS_INFO_STREAM(received_orders_.size());
+        // ROS_INFO_STREAM(received_orders_.size());
         update=false;
 
         // Again check for update
@@ -480,7 +511,7 @@ void AriacOrderManager::dropallparts(std::vector<std::pair<std::string,geometry_
   home_joint_pose_2 = {-1.18, 3.11, -1.60, 2.0, 4.30, -1.53, 0};
   int i=0;
   do {
-    ROS_INFO_STREAM(i);
+    // ROS_INFO_STREAM(i);
 
     if (agv_id == 1) {
       drop_pose_ = {2.4, 1.57, -1.60, 2.0, 4.30, -1.53, 0};
@@ -519,7 +550,7 @@ bool AriacOrderManager::checkOrderUpdate(int i,int diff, std::string order_id, i
             auto new_shipments = var.shipments;
             const auto &var1 = new_shipments[0];
             auto new_agv=var1.agv_id.back();
-            int new_agv_id = (var1.agv_id == "any") ? 1 : new_agv - '0';
+            int new_agv_id = (var1.agv_id == "any") ? 2 : new_agv - '0';
             auto new_products = var1.products;
 
             int parts_in_order=0;
@@ -599,7 +630,7 @@ bool AriacOrderManager::checkOrderUpdate(int i,int diff, std::string order_id, i
     return false;
 }
 
-bool AriacOrderManager::PickAndPlace(std::pair<std::string,geometry_msgs::Pose> product_type_pose, std::string empty_bin) {
+bool AriacOrderManager::PickAndPlace(std::pair<std::string,geometry_msgs::Pose> product_type_pose, std::string empty_bin, int agv_id) {
     std::string product_type = product_type_pose.first;
 
     std::string product_frame = GetProductFrame(product_type);
@@ -621,10 +652,12 @@ bool AriacOrderManager::PickAndPlace(std::pair<std::string,geometry_msgs::Pose> 
     home_joint_pose_2 = {-1.18, 3.11, -1.60, 2.0, 4.30, -1.53, 0};
 
     //--task the robot to pick up this part again from the bin
-      // bool failed_pick = arm1_.PickPart(part_pose);
-    arm1_.SendRobotPosition(home_joint_pose_1);
-    bool failed_pick = arm2_.PickPart(part_pose);
-
+    if (agv_id == 2) {
+      bool failed_pick = arm1_.PickPart(part_pose);
+    } else {
+      arm1_.SendRobotPosition(home_joint_pose_1);
+      bool failed_pick = arm2_.PickPart(part_pose);
+    }
     //--get the pose of the object in the tray from the order
     geometry_msgs::Pose drop_pose = product_type_pose.second;
 
@@ -634,27 +667,13 @@ bool AriacOrderManager::PickAndPlace(std::pair<std::string,geometry_msgs::Pose> 
     StampedPose_in.pose = drop_pose;
         // ROS_INFO_STREAM("StampedPose_int (" << StampedPose_in.pose.position.x <<","<< StampedPose_in.pose.position.y << "," << StampedPose_in.pose.position.z<<")");
     part_tf_listener_.transformPose("/world",StampedPose_in,StampedPose_out);
-        // StampedPose_out.pose.position.x += 0.2;
-        // StampedPose_out.pose.position.y += 0.2;
-        // ROS_INFO_STREAM("StampedPose_out (" << StampedPose_out.pose.position.x <<","<< StampedPose_out.pose.position.y << "," << StampedPose_out.pose.position.z<<")");
 
-        // StampedPose_in.header.frame_id = "/kit_tray_2";
-        // StampedPose_in.pose = drop_pose;
-        //ROS_INFO_STREAM("StampedPose_in " << StampedPose_in.pose.position.x);
-        // part_tf_listener_.transformPose("/world",StampedPose_in,StampedPose_out);
-        // StampedPose_out.pose.position.z += 0.1;
-        // StampedPose_out.pose.position.y += 0.2;
-        //ROS_INFO_STREAM("StampedPose_out " << StampedPose_out.pose.position.x);
-
-    // This is checking if part is faulty ior not
     bool success = false;
-    if( not success ) {
-    	success = arm2_.DropPart(StampedPose_out.pose); //robot_controller
+    if (agv_id == 2 and !success) {
+      success = arm1_.DropPart(StampedPose_out.pose);
+    } else {
+      success = arm2_.DropPart(StampedPose_out.pose);
     }
-    //   success = arm2_.DropPart(StampedPose_out.pose);
-    // }
-    // placed_parts.push_back(std::make_pair(product_type,StampedPose_out.pose));
-
 
     return true;
 

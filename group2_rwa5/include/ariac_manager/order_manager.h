@@ -26,7 +26,7 @@ public:
     std::string GetProductFrame(std::string product_type);
     std::map<std::string, std::list<std::pair<std::string,geometry_msgs::Pose>>> GetOrder();
     bool PickAndPlace(std::pair<std::string,geometry_msgs::Pose> product_type_pose,int agv_id);
-    bool PickAndPlace(std::pair<std::string,geometry_msgs::Pose> product_type_pose, std::string empty_bin);
+    bool PickAndPlace(std::pair<std::string,geometry_msgs::Pose> product_type_pose, std::string empty_bin, int agv_id);
     void SubmitAGV(int num);
     bool checkOrderUpdate(int,int,std::string, int agv_id);
     void dropallparts(std::vector<std::pair<std::string,geometry_msgs::Pose>>, int agv_id);
@@ -49,8 +49,13 @@ public:
                         flipped_arm1_pose_4, flipped_arm1_pose_5,
                         flipped_arm2_pose_3, flipped_arm1_pose_6,
                         flipped_arm2_pose_4, kit_drop_pose_;
+    std::vector<double> out_arm2_pose1, out_arm2_pose2, out_arm2_pose3,
+                        out_arm1_pose1, out_arm1_pose2;
     void FlippedPart(int agv_id, auto pose);
-    bool isFlipped = true;
+    double roll, pitch, yaw;
+    tf::Quaternion q;
+    bool isFlipped = false;
+    bool isReachable = true;
 
 private:
     ros::NodeHandle order_manager_nh_;

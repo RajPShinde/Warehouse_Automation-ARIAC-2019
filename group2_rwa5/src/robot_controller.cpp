@@ -21,9 +21,9 @@ robot_controller_options("manipulator",
         robot_controller_nh_),
 robot_move_group_(robot_controller_options),
 
-robot_controller_nh_2("/ariac/"+arm_id_1),
+robot_controller_nh_2("/ariac/arm2"),
 robot_controller_options_2("manipulator",
-        "/ariac/"+arm_id_1+"/robot_description",
+        "/ariac/arm2/robot_description",
         robot_controller_nh_2),
 robot_move_group_2(robot_controller_options_2) {
 
@@ -54,13 +54,13 @@ robot_move_group_2(robot_controller_options_2) {
      */
 
     home_joint_pose_ = {1.32, 3.11, -1.60, 2.0, 4.30, -1.53, 0};
-    home_joint_pose_1 = {1.18, 3.11, -1.60, 2.0, 4.30, -1.53, 0};
+    home_joint_pose_1 = {0.00, 3.11, -1.60, 2.0, 4.30, -1.53, 0};
     bin_drop_pose_ = {2.5, 3.11, -1.60, 2.0, 3.47, -1.53, 0};
     kit_drop_pose_ = {2.65, 1.57, -1.60, 2.0, 4.30, -1.53, 0};
     belt_drop_pose_ = {2.5, 0, -1.60, 2.0, 3.47, -1.53, 0};
     conveyor = {1.13, 0, -0.70, 1.65, 3.74, -1.56, 0};
     drop_part={2.65, 1.57, -1.60, 2.0, 3.47, -1.53, 0};
-    home_joint_pose_2 = {-1.18, 3.11, -1.60, 2.0, 4.30, -1.53, 0};
+    home_joint_pose_2 = {0.00, 3.11, -1.60, 2.0, 4.30, -1.53, 0};
     kit_drop_pose_2 = {-2.65, -1.57, -1.60, 2.0, 4.30, -1.53, 0};
     flipped_drop_pose_ = {1.18, 1.40, -0.65, 1.80, 5.05, -0.10, 0};
 
@@ -170,7 +170,7 @@ RobotController::~RobotController() {}
  *
  * @return
  */
-bool RobotController::Planner1() {
+bool RobotController::Planner() {
     ROS_INFO_STREAM("Planning 1 started...");
     if (robot_move_group_.plan(robot_planner_) ==
         moveit::planning_interface::MoveItErrorCode::SUCCESS) {
@@ -202,7 +202,7 @@ bool RobotController::Planner1() {
 void RobotController::Execute() {
     ros::AsyncSpinner spinner(4);
     spinner.start();
-    if (this->Planner1()) {
+    if (this->Planner()) {
         robot_move_group_.move();
         ros::Duration(0.5).sleep();
     }
@@ -221,7 +221,7 @@ void RobotController::GoToTarget(const geometry_msgs::Pose& pose, int f) {
     ros::AsyncSpinner spinner(4);
     robot_move_group_.setPoseTarget(target_pose_);
     spinner.start();
-    if (this->Planner1()) {
+    if (this->Planner()) {
         robot_move_group_.move();
         ros::Duration(0.5).sleep();
     }
@@ -280,7 +280,7 @@ void RobotController::SendRobotPosition(std::vector<double> pose) {
     // this->execute();
     ros::AsyncSpinner spinner(4);
     spinner.start();
-    if (this->Planner1()) {
+    if (this->Planner()) {
         robot_move_group_.move();
         // robot_move_group_2.move();
         ros::Duration(1.5).sleep();
@@ -296,7 +296,7 @@ void RobotController::SendRobotPosition2(std::vector<double> pose) {
     // this->execute();
     ros::AsyncSpinner spinner(4);
     spinner.start();
-    if (this->Planner1()) {
+    if (this->Planner()) {
         robot_move_group_2.move();
         ros::Duration(1.5).sleep();
     }
@@ -679,7 +679,7 @@ void RobotController::SendRobot1() {
   // this->execute();
   ros::AsyncSpinner spinner(4);
   spinner.start();
-  if (this->Planner1()) {
+  if (this->Planner()) {
       robot_move_group_.move();
       ros::Duration(1.5).sleep();
   }
@@ -691,7 +691,7 @@ void RobotController::SendRobot2() {
   // this->execute();
   ros::AsyncSpinner spinner(4);
   spinner.start();
-  if (this->Planner1()) {
+  if (this->Planner()) {
       robot_move_group_.move();
       ros::Duration(1.5).sleep();
   }

@@ -29,8 +29,7 @@ class RobotController{
 public:
     RobotController(std::string arm_id_1);
     ~RobotController();
-    bool Planner1();
-    bool Planner2();
+    bool Planner();
     void Execute();
     void GoToTarget(std::initializer_list<geometry_msgs::Pose> list, int f);
     void GoToTarget(const geometry_msgs::Pose& pose,int f);
