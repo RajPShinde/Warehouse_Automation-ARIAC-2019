@@ -17,6 +17,7 @@ orders:
   order_0:
     announcement_condition: time
     announcement_condition_value: 0.0
+    # destinations: agv0
     shipment_count: 1
     products:
       product_0:
@@ -46,7 +47,8 @@ orders:
           rpy: [0, 0, 0]
   order_0_update_0:
     announcement_condition: wanted_products
-    announcement_condition_value: 3
+    announcement_condition_value: 4
+    # destinations: agv0
     shipment_count: 1
     products:
       product_0:

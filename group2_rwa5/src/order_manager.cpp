@@ -155,9 +155,9 @@ bool AriacOrderManager::PickAndPlace(const std::pair<std::string,geometry_msgs::
     if(product_type == "pulley_part")
         part_pose.position.z += 0.037;
     if(product_type == "piston_rod_part")
-        part_pose.position.z -= 0.0155;
+        part_pose.position.z -= 0.0157;
     if(product_type == "gear_part")
-        part_pose.position.z -= 0.0112;
+        part_pose.position.z -= 0.012;
     if(product_type == "disk_part")
         part_pose.position.z = part_pose.position.z;
     if(product_type == "gasket_part")
@@ -227,7 +227,7 @@ void AriacOrderManager::ExecuteOrder() {
 
     std::list<std::pair<std::string,geometry_msgs::Pose>> failed_parts;
     ros::spinOnce();
-    ros::Duration(1.0).sleep();
+    ros::Duration(0.3).sleep();
     product_frame_list_ = camera_.get_product_frame_list();
     int i=0;
     bool update=false;
@@ -338,7 +338,7 @@ void AriacOrderManager::ExecuteOrder() {
             if(update==false)
             {
             ros::Time a=ros::Time::now();
-            ros::Duration(5).sleep();
+            ros::Duration(2.5).sleep();
             ros::Time b=ros::Time::now();
             ros::Duration diffi1=b-a;
 
@@ -473,6 +473,7 @@ bool AriacOrderManager::checkOrderUpdate(int i,int diff, std::string order_id, i
             std::vector<std::pair<std::string,geometry_msgs::Pose>> shuffle_from;
             std::vector<std::pair<std::string,geometry_msgs::Pose>> shuffle_to;
             std::vector<std::pair<std::string,geometry_msgs::Pose>> parts_to_remove;
+            std::vector<std::pair<std::string,geometry_msgs::Pose>> temp_shuffle_to;
             geometry_msgs::Pose temp,temp1,vacant,slider,slider2;
             int pulley,gasket,piston,gear,disk,n_pulley,n_gasket,n_piston,n_gear,n_disk=0;
             int space=0;
@@ -497,16 +498,7 @@ bool AriacOrderManager::checkOrderUpdate(int i,int diff, std::string order_id, i
               part_tf_listener_.transformPose("/world",StampedPose_in,StampedPose_out);
               new_parts.push_back(std::make_pair(p.type,StampedPose_out.pose));
               auto h=std::make_pair(p.type,StampedPose_out.pose);
-              if(p.type=="pulley_part")
-                n_pulley +=1;
-              else if(p.type=="gasket_part")
-                n_gasket +=1;
-              else if(p.type=="piston_part")
-                n_piston +=1;
-              else if(p.type=="gear_part")
-                n_gear +=1;
-              else if(p.type=="disk_part")
-                n_disk +=1;
+    
 
               for(int q=0;q<placed_parts.size();q++)
               {
@@ -524,19 +516,10 @@ bool AriacOrderManager::checkOrderUpdate(int i,int diff, std::string order_id, i
             {
                 if(std::find(present.begin(),present.end(),placed_parts[m])==present.end())
                 {
-                if(placed_parts[m].first=="pulley_part")
-                  pulley +=1;
-                else if(placed_parts[m].first=="gasket_part")
-                  gasket +=1;
-                else if(placed_parts[m].first=="piston_part")
-                  piston +=1;
-                else if(placed_parts[m].first=="gear_part")
-                  gear +=1;
-                else if(placed_parts[m].first=="disk_part")
-                  disk +=1;
                 remaining.push_back(std::make_pair(placed_parts[m].first,placed_parts[m].second));
                 }
             }
+            ROS_INFO_STREAM("YY"<<remaining.size());
 
             // Find which parts can be suffled 
             for(int b=0;b<new_parts.size();b++)
@@ -550,15 +533,46 @@ bool AriacOrderManager::checkOrderUpdate(int i,int diff, std::string order_id, i
                             shuffle_from.push_back(std::make_pair(remaining[n].first,remaining[n].second));
                             shuffle_to.push_back(std::make_pair(remaining[n].first,new_parts[b].second));
                             remaining.erase(remaining.begin()+n);
+                            new_parts.erase(new_parts.begin()+b);
+                            b=0;
+                            break;
                         }
-                        break;
                     }
-                }
-                
+                }  
             }
-            ROS_INFO_STREAM("AAAAAAAAA"<<shuffle_from.size());
-            ROS_INFO_STREAM("AAAAAAAAA"<<shuffle_to.size());
+            ROS_INFO_STREAM("ZZ"<<shuffle_from.size());
             ROS_INFO_STREAM("YY"<<remaining.size());
+            // int f=shuffle_from.size();
+            // for(int x=0;x<f;x++)
+            // {
+            //     shuffle_from.push_back(std::make_pair(shuffle_from[x].first,shuffle_to[x].second));
+            //     shuffle_to.push_back(std::make_pair(shuffle_from[x].first,shuffle_from[x].second));
+            //     for(int r=0;r<remaining.size();r++)
+            //     {
+            //         if(remaining[r]==std::make_pair(shuffle_from[x].first,shuffle_to[x].second))
+            //         {
+            //             remaining.erase(remaining.begin()+r);
+            //             break;
+            //         }
+            //     }
+            // }
+            // ROS_INFO_STREAM("AAAAAAAAA"<<shuffle_from.size());
+            // ROS_INFO_STREAM("AAAAAAAAA"<<shuffle_to.size());
+            ROS_INFO_STREAM("LLLLLLLLLLL"<<placed_parts.size());
+
+            // Find Remaining parts
+            remaining.clear();
+            for(int v=0;v<placed_parts.size();v++)
+            {
+                if(std::find(shuffle_from.begin(),shuffle_from.end(),placed_parts[v])==shuffle_from.end() && std::find(present.begin(),present.end(),placed_parts[v])==present.end())
+                    remaining.push_back(std::make_pair(placed_parts[v].first,placed_parts[v].second));  
+                // else if(std::find(shuffle_from.begin(),shuffle_from.end(),placed_parts[v])==shuffle_from.end())
+                //     remaining.push_back(std::make_pair(placed_parts[v].first,placed_parts[v].second));
+                // else if(std::find(present.begin(),present.end(),placed_parts[v])==present.end())
+                //     remaining.push_back(std::make_pair(placed_parts[v].first,placed_parts[v].second));
+            }
+            ROS_INFO_STREAM("YY"<<remaining.size());
+
 
             // Find Parts which can be removed
             if(remaining.size()>0)
@@ -566,7 +580,8 @@ bool AriacOrderManager::checkOrderUpdate(int i,int diff, std::string order_id, i
             dropallparts(remaining, agv_id);
             // space=1;
             }
-
+            
+            temp_shuffle_to=shuffle_to;
             // Shuffle parts
             if(shuffle_from.size()>0)
             {
@@ -587,6 +602,7 @@ bool AriacOrderManager::checkOrderUpdate(int i,int diff, std::string order_id, i
                             arm2_.PickPart(shuffle_from[d].second,2);
                           }
                           interchange=1;
+                          shuffle_from.erase(shuffle_from.begin()+d);
                           break;
                         }
 
@@ -601,7 +617,7 @@ bool AriacOrderManager::checkOrderUpdate(int i,int diff, std::string order_id, i
                           if(agv_id==1)
                           {
                             slider.position.x=0.31;
-                            slider.position.y=1.42;
+                            slider.position.y=2.2;
                             slider.position.z=0.94;
                             arm1_.DropPart(slider,1);
                             arm1_.PickPart(shuffle_from[e].second,1);
@@ -612,7 +628,7 @@ bool AriacOrderManager::checkOrderUpdate(int i,int diff, std::string order_id, i
                         else
                           {
                             slider2.position.x=0.31;
-                            slider2.position.y=-1.42;
+                            slider2.position.y=-2.2;
                             slider2.position.z=0.94;
                             arm2_.DropPart(slider2,2);
                             arm2_.PickPart(shuffle_from[e].second,2);
@@ -624,6 +640,11 @@ bool AriacOrderManager::checkOrderUpdate(int i,int diff, std::string order_id, i
                         }
                         else
                         {
+                          vacant=shuffle_from[e].second;
+                          vacant.position.x=remaining[0].second.position.x;
+                          vacant.position.y=remaining[0].second.position.y;
+                          vacant.position.z=remaining[0].second.position.z;
+
                           if(agv_id==1)
                           {
                             arm1_.DropPart(vacant,1);
@@ -653,36 +674,38 @@ bool AriacOrderManager::checkOrderUpdate(int i,int diff, std::string order_id, i
                           }
                         else
                           {
-                            arm2_.PickPart(shuffle_from[e].second,1);
+                            arm2_.PickPart(shuffle_from[e].second,2);
                             arm2_.DropPart(shuffle_to[e].second,2);
                           }
                     }
+                    shuffle_to.erase(shuffle_to.begin());
+                    e=0;
                   }
 
                 
             }
             
             // Update PLaced Parts List
-            if(present.size()>0 || shuffle_from.size()>0)
+            if(present.size()>0 || temp_shuffle_to.size()>0)
             {
                 placed_parts.clear();
                 placed_parts=present;
-                for(int y=0;y<shuffle_to.size();y++)
-                {
-                    placed_parts.push_back(std::make_pair(shuffle_to[y].first,shuffle_to[y].second));
+                for(int y=0;y<temp_shuffle_to.size();y++)
+                {   
+                    ROS_INFO_STREAM(temp_shuffle_to[y].first);
+                    ROS_INFO_STREAM(temp_shuffle_to[y].second);
+                    placed_parts.push_back(std::make_pair(temp_shuffle_to[y].first,temp_shuffle_to[y].second));
                 }
 
             }
             ROS_INFO_STREAM("LLLLLLLLLLL"<<placed_parts.size());
+            ROS_WARN_STREAM("Update Changes Complete");
             return true;
         }
 
-
-
-
             // drop all parts if updated order on different AGV
             // drop all parts if all parts are different
-            if(agv_id!=new_agv_id || present.size()==0 )
+            if(agv_id!=new_agv_id || (present.size()==0 || shuffle_from.size()==0) )
             {
             ROS_INFO_STREAM("All parts in new order are different or on Other AGV");
             ROS_INFO_STREAM("Dropping all parts in the kit");
@@ -708,9 +731,9 @@ bool AriacOrderManager::PickAndPlace(std::pair<std::string,geometry_msgs::Pose> 
     if(product_type == "pulley_part")
         part_pose.position.z += 0.037;
     if(product_type == "piston_rod_part")
-        part_pose.position.z -= 0.0158;
+        part_pose.position.z -= 0.0157;
     if(product_type == "gear_part")
-        part_pose.position.z -= 0.0112;
+        part_pose.position.z -= 0.012;
     if(product_type == "disk_part")
         part_pose.position.z = part_pose.position.z;
     if(product_type == "gasket_part")
@@ -767,9 +790,9 @@ void AriacOrderManager::OutOfReach(std::string arm, std::string num, std::pair<s
   if(product.first == "pulley_part")
       part_pose.position.z += 0.037;
   if(product.first == "piston_rod_part")
-      part_pose.position.z -= 0.0158;
+      part_pose.position.z -= 0.0157;
   if(product.first == "gear_part")
-      part_pose.position.z -= 0.0112;
+      part_pose.position.z -= 0.012;
   if(product.first == "disk_part")
       part_pose.position.z = part_pose.position.z;
   if(product.first == "gasket_part")

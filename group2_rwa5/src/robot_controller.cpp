@@ -163,7 +163,7 @@ void RobotController::Execute() {
     spinner.start();
     if (this->Planner()) {
         robot_move_group_.move();
-        ros::Duration(0.5).sleep();
+        ros::Duration(time).sleep();
     }
 }
 
@@ -183,7 +183,7 @@ void RobotController::GoToTarget(const geometry_msgs::Pose& pose, int f) {
     spinner.start();
     if (this->Planner()) {
         robot_move_group_.move();
-        ros::Duration(0.5).sleep();
+        ros::Duration(time).sleep();
     }
     ROS_INFO_STREAM("Point reached...");
 }
@@ -219,13 +219,13 @@ void RobotController::GoToTarget(
             robot_move_group_.computeCartesianPath(waypoints, 0.01, 0.0, traj, true);
 
     ROS_WARN_STREAM("Fraction: " << fraction * 100);
-    ros::Duration(0.5).sleep();
+    ros::Duration(time).sleep();
 
     robot_planner_.trajectory_ = traj;
 
     //if (fraction >= 0.3) {
         robot_move_group_.execute(robot_planner_);
-        ros::Duration(0.5).sleep();
+        ros::Duration(time).sleep();
 //    } else {
 //        ROS_ERROR_STREAM("Safe Trajectory not found!");
 //    }
@@ -239,9 +239,9 @@ void RobotController::SendRobotPosition(std::vector<double> pose) {
     spinner.start();
     if (this->Planner()) {
         robot_move_group_.move();
-        ros::Duration(1.5).sleep();
+        ros::Duration(time).sleep();
     }
-     ros::Duration(0.5).sleep();
+     ros::Duration(time).sleep();
 }
 
 void RobotController::SendRobotPosition2(std::vector<double> pose) {
@@ -252,9 +252,9 @@ void RobotController::SendRobotPosition2(std::vector<double> pose) {
     spinner.start();
     if (this->Planner()) {
         robot_move_group_2.move();
-        ros::Duration(1.5).sleep();
+        ros::Duration(time).sleep();
     }
-     ros::Duration(0.5).sleep();
+     ros::Duration(time).sleep();
 }
 
 void RobotController::SendRobotHome() {
@@ -265,9 +265,9 @@ void RobotController::SendRobotHome() {
     spinner.start();
     if (this->Planner()) {
         robot_move_group_.move();
-        ros::Duration(1.5).sleep();
+        ros::Duration(time).sleep();
     }
-     ros::Duration(0.5).sleep();
+     ros::Duration(time).sleep();
 }
 
 void RobotController::SendRobotHome2() {
@@ -278,15 +278,15 @@ void RobotController::SendRobotHome2() {
     spinner.start();
     if (this->Planner()) {
         robot_move_group_2.move();
-        ros::Duration(1.5).sleep();
+        ros::Duration(time).sleep();
     }
-     ros::Duration(0.5).sleep();
+     ros::Duration(time).sleep();
 }
 
 void RobotController::GripperToggle(const bool& state) {
     gripper_service_.request.enable = state;
     gripper_client_.call(gripper_service_);
-    ros::Duration(1.0).sleep();
+    ros::Duration(0.2).sleep();
     // if (gripper_client_.call(gripper_service_)) {
     if (gripper_service_.response.success) {
         ROS_INFO_STREAM("Gripper activated!");
@@ -298,7 +298,7 @@ void RobotController::GripperToggle(const bool& state) {
 void RobotController::GripperToggle2(const bool& state) {
     gripper_service_2.request.enable = state;
     gripper_client_2.call(gripper_service_2);
-    ros::Duration(1.0).sleep();
+    ros::Duration(0.2).sleep();
     // if (gripper_client_.call(gripper_service_)) {
     if (gripper_service_2.response.success) {
         ROS_INFO_STREAM("Gripper activated!");
@@ -319,7 +319,7 @@ bool RobotController::DropPart(geometry_msgs::Pose part_pose, int agv_id) {
 
     // robot_move_group_.setJointValueTarget(kit_drop_pose_);
     // this->Execute();
-    ros::Duration(1.0).sleep();
+    ros::Duration(time).sleep();
     part_pose.position.z += 0.1;
     auto temp_pose = part_pose;
     // auto temp_pose = agv_position_;
@@ -330,7 +330,7 @@ bool RobotController::DropPart(geometry_msgs::Pose part_pose, int agv_id) {
     this->GripperToggle(false);
     SendRobotPosition(kit_drop_pose_);
     ROS_INFO_STREAM("Checking if part if faulty");
-    ros::Duration(1.0).sleep();
+    ros::Duration(time).sleep();
     ros::spinOnce();
     if(is_faulty_ ) {  
         ROS_INFO_STREAM("Rejecting Part");
@@ -339,7 +339,7 @@ bool RobotController::DropPart(geometry_msgs::Pose part_pose, int agv_id) {
         PickPart(part_pose, 1);
         SendRobotPosition(kit_drop_pose_);
         this->GripperToggle(false);
-        ros::Duration(1.0).sleep();
+        ros::Duration(time).sleep();
         drop =false;
     }
     return drop;
@@ -356,7 +356,7 @@ bool RobotController::DropPart(geometry_msgs::Pose part_pose, int agv_id) {
 
     // robot_move_group_.setJointValueTarget(kit_drop_pose_);
     // this->Execute();
-    ros::Duration(1.0).sleep();
+    ros::Duration(time).sleep();
     part_pose.position.z += 0.1;
     auto temp_pose = part_pose;
     // auto temp_pose = agv_position_;
@@ -367,7 +367,7 @@ bool RobotController::DropPart(geometry_msgs::Pose part_pose, int agv_id) {
     this->GripperToggle2(false);
     SendRobotPosition2(kit_drop_pose_);
     ROS_INFO_STREAM("Checking if part if faulty");
-    ros::Duration(1.0).sleep();
+    ros::Duration(time).sleep();
     ros::spinOnce();
     if(is_faulty_ ) {  
         ROS_INFO_STREAM("Rejecting Part");
@@ -376,7 +376,7 @@ bool RobotController::DropPart(geometry_msgs::Pose part_pose, int agv_id) {
         PickPart(part_pose, 2);
         SendRobotPosition2(kit_drop_pose_);
         this->GripperToggle2(false);
-        ros::Duration(1.0).sleep();
+        ros::Duration(time).sleep();
         drop =false;
     }
     return drop;
@@ -490,7 +490,7 @@ bool RobotController::PickPartconveyor(std::string product){
   robot_move_group_.setJointValueTarget(temp_pose_);
   robot_move_group_.move();
   ROS_INFO_STREAM("Move to temp position");
-  ros::Duration(0.5).sleep();
+  ros::Duration(0.2).sleep();
   final_.orientation.w = 0.707;
   final_.orientation.y = 0.707;
   final_.position.x = 1.22;
@@ -538,7 +538,7 @@ bool RobotController::PickPartconveyor(std::string product){
       robot_move_group_.setPoseTarget(place_pose_);
       robot_move_group_.move(); 
       ROS_INFO_STREAM("place pose reached"); 
-      ros::Duration(0.5).sleep();
+      ros::Duration(0.2).sleep();
       this->GripperToggle(false);
     }
     robot_move_group_.setPoseTarget(final_);
@@ -631,7 +631,7 @@ bool RobotController::DropPart(geometry_msgs::Pose part_pose) {
 
   ROS_INFO_STREAM("Moving to end of conveyor...");
 
-  ros::Duration(1.0).sleep();
+  ros::Duration(time).sleep();
 
   // part_pose.position.y += 0.1;
   part_pose.position.z += 0.1;
@@ -643,12 +643,11 @@ bool RobotController::DropPart(geometry_msgs::Pose part_pose) {
   this->GoToTarget({temp_pose, part_pose},0);
   // ros::Duration(0.5).sleep();
 
-  ros::Duration(1.0).sleep();
+  ros::Duration(time).sleep();
   ros::spinOnce();
-  ros::Duration(0.5).sleep();
 	ROS_INFO_STREAM("Moving to end of conveyor");
 
-	ros::Duration(1.0).sleep();
+	ros::Duration(time).sleep();
 
   this->GripperToggle2(false);
 

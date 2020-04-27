@@ -96,6 +96,7 @@ private:
     std::vector<double> belt_drop_pose_;
     std::vector<double> drop_part;
     std::vector<double> conveyor;
+    float time=0.6;
 
     std::vector<double> home_joint_pose_2;
     std::vector<double> bin_drop_pose_2;
