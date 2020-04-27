@@ -54,6 +54,7 @@ public:
     bool PickPartConveyor(std::string part_name, std::vector<std::string> parts_already_in_bin, 
                             std::vector<std::string> bins_arm1, std::vector<std::string> bins_arm2,
                             std::vector<std::string> bin_part);
+    std::vector<std::string> all_parts_on_belt;
 
 
 private:

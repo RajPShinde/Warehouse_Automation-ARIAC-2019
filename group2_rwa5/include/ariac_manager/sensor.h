@@ -38,12 +38,13 @@ public:
     void LogicalCamera5Callback(const osrf_gear::LogicalCameraImage::ConstPtr&);
     void LogicalCamera6Callback(const osrf_gear::LogicalCameraImage::ConstPtr&);
     void LogicalCamera7Callback(const osrf_gear::LogicalCameraImage::ConstPtr&);
-    void break_beam_callback_(const osrf_gear::Proximity::ConstPtr & );
+    void break_beam_callback_1(const osrf_gear::Proximity::ConstPtr &);
     void break_beam_callback_2(const osrf_gear::Proximity::ConstPtr &);
     bool getBeam();
     bool init1, init2, init3 , init4, init5, init6, init7;
     std::vector<std::string> order_parts;
     std::vector<std::string> belt_parts_lcam;
+    std::vector<std::string> all_parts_belt;
     int counter{0};
     
     bool gripper_state_1;
@@ -107,7 +108,7 @@ private:
     ros::Subscriber camera_6_subscriber_;
     ros::Subscriber camera_7_subscriber_;
     ros::Subscriber break_beam_subscriber_2_;
-    ros::Subscriber break_beam_subscriber_;
+    ros::Subscriber break_beam_subscriber_1_;
 
 //    ros::Subscriber quality_control_camera_subscriber_;
 
@@ -130,9 +131,9 @@ private:
     //std::map<std::string, std::list<std::string>> parts_list_;
     std::map<std::string, std::vector<std::string>> product_frame_list_;
 
-    bool init1_,init2_,init3_,init4_,init5_,init6_,init7_, cam_1_, cam_2_,cam_3_,cam_4_,cam_5_,cam_6_, cam_7_,beam_, is_faulty_;
+    bool init1_,init2_,init3_,init4_,init5_,init6_,init7_, cam_1_, cam_2_,cam_3_,cam_4_,cam_5_,cam_6_, cam_7_,beam_1_,beam_2_, is_faulty_;
     std::string logical1_,logical2_,logical3_,logical4_,logical5_,logical6_,logical7_;
     int camera1_frame_counter_, camera2_frame_counter_, camera3_frame_counter_, camera4_frame_counter_,
-    camera5_frame_counter_,camera6_frame_counter_,camera7_frame_counter_, break_beam_counter_,
+    camera5_frame_counter_,camera6_frame_counter_,camera7_frame_counter_, break_beam_counter_1_, break_beam_counter_2_,
     prev1,prev2,prev3,prev4,prev5,prev6,prev7,f;
 };

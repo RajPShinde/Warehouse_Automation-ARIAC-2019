@@ -22,7 +22,7 @@ AriacOrderManager::~AriacOrderManager(){}
 
 void AriacOrderManager::OrderCallback(const osrf_gear::Order::ConstPtr& order_msg) {
     ROS_WARN_STREAM(">>>>> OrderCallback");
-
+    ROS_INFO_STREAM("Order function called");
     received_orders_.push_back(*order_msg);
     bin1_part = camera_.LogicalCamera1PartType();
     bin2_part = camera_.LogicalCamera2PartType();
@@ -30,6 +30,7 @@ void AriacOrderManager::OrderCallback(const osrf_gear::Order::ConstPtr& order_ms
     bin4_part = camera_.LogicalCamera4PartType();
     bin5_part = camera_.LogicalCamera5PartType();
     bin6_part = camera_.LogicalCamera6PartType();
+    belt_part = camera_.BeltCameraPart();
     bin_parts = {bin1_part, bin2_part, bin3_part,
               bin4_part, bin5_part, bin6_part};
     for (const auto &order:received_orders_){
@@ -63,7 +64,7 @@ void AriacOrderManager::OrderCallback(const osrf_gear::Order::ConstPtr& order_ms
                   ROS_INFO_STREAM_THROTTLE(5, "Out of range for Arm1");
                 }
                 if (product.type == bin6_part and agv_id == 2) {
-                  ROS_INFO_STREAM_THROTTLE(10, "Out of range for Arm2");
+                  ROS_INFO_STREAM_THROTTLE(5, "Out of range for Arm2");
                 }
                 // ROS_INFO_STREAM("Product pose: " << product_type_pose_.second.position.x);
             }
@@ -187,6 +188,59 @@ void AriacOrderManager::OrderCallback(const osrf_gear::Order::ConstPtr& order_ms
     }
 }
 
+void AriacOrderManager::UpdateBin(){
+    //update parts present in the bins
+    bin1_part = camera_.LogicalCamera1PartType();
+    bin2_part = camera_.LogicalCamera2PartType();
+    bin3_part = camera_.LogicalCamera3PartType();
+    bin4_part = camera_.LogicalCamera4PartType();
+    bin5_part = camera_.LogicalCamera5PartType();
+    bin6_part = camera_.LogicalCamera6PartType();
+
+    //Store all part types present
+    bin_part.push_back(bin1_part);
+    bin_part.push_back(bin2_part);
+    bin_part.push_back(bin3_part);
+    bin_part.push_back(bin4_part);
+    bin_part.push_back(bin5_part);
+    bin_part.push_back(bin6_part);
+
+    //update parts already present in bins
+    parts_already_in_bin.clear();
+    if(bin1_part == "n")
+        empty_bins.push_back("bin1");
+    else
+        parts_already_in_bin.push_back(bin1_part);
+    if(bin2_part == "n")
+        empty_bins.push_back("bin2");
+    else
+        parts_already_in_bin.push_back(bin2_part);
+    if(bin3_part == "n")
+        empty_bins.push_back("bin3");
+    else
+        parts_already_in_bin.push_back(bin3_part);
+    if(bin4_part == "n")
+        empty_bins.push_back("bin4");
+    else
+        parts_already_in_bin.push_back(bin4_part);
+    if(bin5_part == "n")
+        empty_bins.push_back("bin5");
+    else
+        parts_already_in_bin.push_back(bin5_part);
+    if(bin6_part == "n")
+        empty_bins.push_back("bin6");
+    else
+        parts_already_in_bin.push_back(bin6_part);
+
+    //update part count
+    count1 = camera_.count_bin1;
+    count2 = camera_.count_bin2;
+    count3 = camera_.count_bin3;
+    count4 = camera_.count_bin4;
+    count5 = camera_.count_bin5;
+    count6 = camera_.count_bin6;
+}
+
 
 
 /**
@@ -197,6 +251,7 @@ void AriacOrderManager::OrderCallback(const osrf_gear::Order::ConstPtr& order_ms
 std::string AriacOrderManager::GetProductFrame(std::string product_type) {
     //--Grab the last one from the list then remove itle()
     ROS_INFO_STREAM("Came Here");
+    std::string temp_part = camera_.BeltCameraPart();
     int threshold_new = 4;
     ROS_INFO_STREAM("Product count: " << product_frame_list_.count(product_type));
     if (!product_frame_list_.empty() && product_frame_list_.count(product_type)!=0 && 
@@ -210,11 +265,11 @@ std::string AriacOrderManager::GetProductFrame(std::string product_type) {
          ROS_INFO_STREAM("Getting " << product_type << " from the conveyor Belt");
 //		else return "NOO";
 
-         // bool failed_pick = arm1_.PickPartconveyor(product_type);
-         bool failed_pick = arm1_.PickPartConveyor(product_type, parts_already_in_bin, bins_arm1, bins_arm2, bin_part);
+         bool failed_pick = arm1_.PickPartconveyor(product_type);
+         /*bool failed_pick = arm1_.PickPartConveyor(product_type, parts_already_in_bin, bins_arm1, bins_arm2, bin_part);
             while(!failed_pick){
                 failed_pick = arm1_.PickPartConveyor(product_type, parts_already_in_bin, bins_arm1, bins_arm2, bin_part);  //robot_controller
-            }
+            }*/
          // std::string part_on_belt = camera_.BeltCameraPart();
          // ROS_INFO_STREAM_THROTTLE(10, "Part on belt: " << part_on_belt);
          // if(part_on_belt != "n"){
@@ -256,10 +311,112 @@ std::string AriacOrderManager::GetProductFrame(std::string product_type) {
 
 }
 
+std::string AriacOrderManager::DecideBinArm(std::string conveyor_part){
+    //call update bin before this function always
+    ROS_INFO_STREAM("Inside Decide arm bin function");  
+
+    int part_count = 0;
+    int bin_number = 0;
+    std::string arm;
+    std::string bin;
+    ROS_INFO_STREAM("Bin1 part: "<<bin1_part);
+    if(bin1_part == conveyor_part){
+        ROS_INFO_STREAM("Condition met");
+        part_count = count1;
+        bin_number = 1;
+        bin = "bin1";
+    }
+    if(bin2_part == conveyor_part){
+        part_count = count2;
+        bin_number = 2;
+        bin = "bin2";
+    }
+    if(bin3_part == conveyor_part){
+        part_count = count3;
+        bin_number = 3;
+        bin = "bin3";
+    }
+    if(bin4_part == conveyor_part){
+        part_count = count4;
+        bin_number = 4;
+        bin = "bin4";
+    }
+    if(bin5_part == conveyor_part){
+        part_count = count5;
+        bin_number = 5;
+        bin = "bin5";
+    }
+    if(bin6_part == conveyor_part){
+        part_count = count6;
+        bin_number = 6;
+        bin = "bin6";
+    }
+
+    if(part_count >= 4){
+        ROS_INFO_STREAM("Sufficient parts found in bin");
+        bin = "";
+        arm = "";
+        // break;
+    }
+
+    ROS_INFO_STREAM("Part count from decide func: " << part_count);
+
+    if(part_count <= 4){
+        if(part_count == 0){
+            if(std::find(empty_bins.begin(), empty_bins.end(), "bin4") != empty_bins.end()){
+                ROS_INFO_STREAM("Bin 4 is empty for placing using arm1");
+                bin = "bin4";
+                arm = "arm1";
+            }
+            else if(std::find(empty_bins.begin(), empty_bins.end(), "bin5") != empty_bins.end()){
+                ROS_INFO_STREAM("Bin 5 is empty for placing using arm1");
+                bin = "bin5";
+                arm = "arm1";
+            }
+            else if(std::find(empty_bins.begin(), empty_bins.end(), "bin6") != empty_bins.end()){
+                ROS_INFO_STREAM("Bin 5 is empty for placing using arm1");
+                bin = "bin6";
+                arm = "arm1";
+            }
+            else if(std::find(empty_bins.begin(), empty_bins.end(), "bin1") != empty_bins.end()){
+                ROS_INFO_STREAM("Bin 1 is empty for placing using arm2");
+                bin = "bin1";
+                arm = "arm2";
+            }
+            else if(std::find(empty_bins.begin(), empty_bins.end(), "bin2") != empty_bins.end()){
+                ROS_INFO_STREAM("Bin 2 is empty for placing using arm2");
+                bin = "bin2";
+                arm = "arm2";
+            }
+            else if(std::find(empty_bins.begin(), empty_bins.end(), "bin3") != empty_bins.end() ){
+                ROS_INFO_STREAM("Bin 3 is empty for placing using arm2");
+                bin = "bin3";
+                arm = "arm2";
+            }
+
+        }
+        if(part_count != 0){
+            if(bin_number == 1 || bin_number == 2 || bin_number == 3)
+                arm = "arm2";
+            if(bin_number == 4 || bin_number == 5 || bin_number == 6)
+                arm = "arm2";
+        } 
+    }
+    ROS_INFO_STREAM("Bin, arm:"<<bin<<" "<<arm);
+    return bin, arm;
+}
+
 bool AriacOrderManager::PickAndPlace(const std::pair<std::string,geometry_msgs::Pose> product_type_pose, int agv_id) {
+    ROS_INFO_STREAM("Inside pick and place function");
     std::string product_type = product_type_pose.first;
+    std::string arm, bin;
+    UpdateBin();
+    bin, arm = DecideBinArm("piston_rod_part");
+    // bin, arm = DecideBinArm("gasket_part");
+    // bin, arm = DecideBinArm("gear_part");
 
     std::string product_frame = GetProductFrame(product_type);
+    std::string temp_part = camera_.BeltCameraPart();
 
     auto part_pose = camera_.GetPartPose("/world", product_frame);
 
@@ -543,7 +700,13 @@ bool AriacOrderManager::checkOrderUpdate(int i,int diff, std::string order_id, i
 }
 
 bool AriacOrderManager::PickAndPlace(std::pair<std::string,geometry_msgs::Pose> product_type_pose, std::string empty_bin) {
+    ROS_INFO_STREAM("Inside pick and place function -2");
     std::string product_type = product_type_pose.first;
+    std::string arm, bin;
+    UpdateBin();
+    bin, arm = DecideBinArm("piston_rod_part");
+    // bin, arm = DecideBinArm("gasket_part");
+    // bin, arm = DecideBinArm("gear_part");
 
     std::string product_frame = GetProductFrame(product_type);
 

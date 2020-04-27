@@ -581,7 +581,12 @@ bool RobotController::PickPartConveyor(std::string part_name, std::vector<std::s
                                       std::vector<std::string> bin_part){
   bool present_flag = false;
   bool empty_flag = false;
-  ROS_INFO_STREAM("Inside pick conveyor");
+  // ROS_INFO_STREAM("Inside pick conveyor");
+  // std::string temp_part = beam.BeltCameraPart();
+  // if(temp_part != "n")
+  //   all_parts_on_belt.push_back(temp_part);
+  // ROS_INFO_STREAM_THROTTLE(2, "Length part vector: " << beam.all_parts_belt.size());
+
 
   temp_pose_["shoulder_pan_joint"] = 0;
   temp_pose_["shoulder_lift_joint"] = -0.5;
@@ -604,11 +609,11 @@ bool RobotController::PickPartConveyor(std::string part_name, std::vector<std::s
   // robot_move_group_.setJointValueTarget(final_);
   // robot_move_group_.move();
   if(std::find(parts_already_in_bin.begin(), parts_already_in_bin.end(), part_name) != parts_already_in_bin.end()){
-    ROS_INFO_STREAM("Part is present in one bin");
+    ROS_INFO_STREAM_THROTTLE(10, "Part is present in one bin");
     present_flag = true;
   }
   else{
-    ROS_INFO_STREAM("Part is not present in any bin");
+    ROS_INFO_STREAM_THROTTLE(10, "Part is not present in any bin");
     empty_flag = true;
   }
 
@@ -616,10 +621,11 @@ bool RobotController::PickPartConveyor(std::string part_name, std::vector<std::s
     for(int i = 0; i < 6; i++){
       if(bin_part[i] == part_name){
         if((i+1) == 1 or (i+1) == 2 or (i+1) == 3){
-          ROS_INFO_STREAM("Arm2 for placing from bin: " << i+1);
+          ROS_INFO_STREAM_THROTTLE(10, "Arm2 for placing from bin: " << i+1);
+          
         }
         else if((i+1) == 4 or (i+1) == 5 or (i+1) == 6){
-          ROS_INFO_STREAM("Arm1 for placing from bin: "<< i+1);
+          ROS_INFO_STREAM_THROTTLE(10, "Arm1 for placing from bin: "<< i+1);
         }
       }
     }
@@ -629,15 +635,16 @@ bool RobotController::PickPartConveyor(std::string part_name, std::vector<std::s
     for(int i = 0; i < 6; i++){
       if(bin_part[i] == "n"){
         if((i+1) == 1 or (i+1) == 2 or (i+1) == 3){
-          ROS_INFO_STREAM("Arm2 for placing in bin: " << i+1);
+          ROS_INFO_STREAM_THROTTLE(10, "Arm2 for placing in bin: " << i+1);
         }
         else if((i+1) == 4 or (i+1) == 5 or (i+1) == 6){
-          ROS_INFO_STREAM("Arm1 for placing in bin: " << i+1);
+          ROS_INFO_STREAM_THROTTLE(10, "Arm1 for placing in bin: " << i+1);
         }
 
       }
     }
   }
+  // ros::spin();
   return false;
 }
 

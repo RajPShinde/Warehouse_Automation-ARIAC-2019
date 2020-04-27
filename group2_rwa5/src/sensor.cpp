@@ -20,6 +20,7 @@ camera3_part_list{}{
     prev4=0;
     prev5=0;
     prev6=0;
+    prev7=0;
     camera_1_subscriber_ = sensor_nh_.subscribe("/ariac/logical_camera_1", 10,
                                                 &AriacSensorManager::LogicalCamera1Callback, this);
     camera_2_subscriber_ = sensor_nh_.subscribe("/ariac/logical_camera_2", 10,
@@ -36,6 +37,8 @@ camera3_part_list{}{
                                                 &AriacSensorManager::LogicalCamera7Callback, this);
     // break_beam_subscriber_ = sensor_nh_.subscribe("/ariac/break_beam_1_change", 10, 
     //                                             &AriacSensorManager::break_beam_callback_,this);
+    break_beam_subscriber_1_ = sensor_nh_.subscribe("/ariac/break_beam_1_change", 10, 
+                                                &AriacSensorManager::break_beam_callback_1, this);
     break_beam_subscriber_2_ = sensor_nh_.subscribe("/ariac/break_beam_2_change", 10, 
                                                 &AriacSensorManager::break_beam_callback_2, this);
 
@@ -204,6 +207,24 @@ void AriacSensorManager::LogicalCamera6Callback(const osrf_gear::LogicalCameraIm
 }
 
 void AriacSensorManager::LogicalCamera7Callback(const osrf_gear::LogicalCameraImage::ConstPtr& image_msg){
+    if (init7) return;
+    // count_bin7 = image_msg->models.size();
+    if (image_msg->models.size() == 0) {
+        // ROS_ERROR_STREAM("Logical Camera 6 does not see anything");
+        init7 = true;
+    }
+    else {
+        if(image_msg->models.size() !=prev7){
+            prev7=image_msg->models.size();
+            ROS_INFO_STREAM_THROTTLE(10,
+                             "Logical camera 7: '" << image_msg->models.size() << "' objects.");
+            current_parts_7_ = *image_msg;
+            this->BuildProductFrames(7);
+        }
+    }
+}
+
+/*void AriacSensorManager::LogicalCamera7Callback(const osrf_gear::LogicalCameraImage::ConstPtr& image_msg){
     auto imageMessage = *image_msg ;  
     int obj_count = 1;  
     // ros::Duration timeout(1.0);
@@ -282,13 +303,17 @@ void AriacSensorManager::LogicalCamera7Callback(const osrf_gear::LogicalCameraIm
     }   
         
 
-}
+}*/
 
 void AriacSensorManager::break_beam_callback_2(const osrf_gear::Proximity::ConstPtr & msg) {
     if (msg->object_detected) {
         ROS_INFO("Break beam 2 triggered.");
         break_beam_counter += 1;
         grab_now_1 = true;
+        beam_2_ = true;
+     }
+     else{
+        beam_2_ = false;
      }
 }
 
@@ -382,6 +407,7 @@ void AriacSensorManager::BuildProductFrames(int camera_id){
             std::string product_frame = "logical_camera_7_" + msg.type + "_" +
                                         std::to_string(camera7_frame_counter_) + "_frame";
             logical7_=msg.type;
+            ROS_INFO_STREAM("Cam 7 sees: " << logical7_);
             product_frame_list_[msg.type].emplace_back(product_frame);
             camera7_frame_counter_++;
             // prev3=camera3_frame_counter_;
@@ -426,19 +452,30 @@ geometry_msgs::Pose AriacSensorManager::GetPartPose(const std::string& src_frame
     return part_pose;
 }
 
-void AriacSensorManager::break_beam_callback_(const osrf_gear::Proximity::ConstPtr &msg) {
+void AriacSensorManager::break_beam_callback_1(const osrf_gear::Proximity::ConstPtr &msg) {
     if (msg->object_detected) {
-        ROS_INFO("Break beam 2 triggered.");
-break_beam_counter_ += 1;
-        beam_=true;
+        ROS_INFO("Break beam 1 triggered.");
+        break_beam_counter_1_+= 1;
+        beam_1_=true;
      }
      else{
-        beam_=false;
+        beam_1_=false;
      }
 }
 
+/*void AriacSensorManager::break_beam_callback_2(const osrf_gear::Proximity::ConstPtr &msg) {
+    if (msg->object_detected) {
+        ROS_INFO("Break beam 2 triggered.");
+        break_beam_counter_2_+= 1;
+        beam_2_=true;
+     }
+     else{
+        beam_2_=false;
+     }
+}*/
+
 bool AriacSensorManager::getBeam() {
- return beam_;
+ return beam_1_, beam_2_;
  }
 
  std::string AriacSensorManager::getpart() {
@@ -519,9 +556,12 @@ std::string AriacSensorManager::LogicalCamera6PartType(){
  std::string AriacSensorManager::BeltCameraPart(){
     if(logical7_ == ""){
         cam7_part_type = 'n';
+        ROS_INFO_STREAM_THROTTLE(2, "Conveyor camera sees: " << cam7_part_type);
     }
     else{
         cam7_part_type = logical7_;
+        ROS_INFO_STREAM_THROTTLE(2, "Conveyor camera sees: " << cam7_part_type);
+        all_parts_belt.push_back(cam7_part_type);
     }
     return cam7_part_type;
  }

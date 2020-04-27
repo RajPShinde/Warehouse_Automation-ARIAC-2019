@@ -34,6 +34,8 @@ public:
     void OutOfReach(std::string arm, std::string num, std::pair<std::string,geometry_msgs::Pose> product, int agv_id);
     std::vector<geometry_msgs::Pose> FillBin(int bin_number, std::string conveyor_part_type);
     double round_up(double value, int decimal_places);
+    void UpdateBin();
+    std::string DecideBinArm(std::string conveyor_part);
     std::vector<std::string> GetProductType();
     std::vector<geometry_msgs::Pose> GetProductPose();
     std::vector<std::string> productlist_type;
@@ -44,6 +46,7 @@ public:
     std::string bin4_part;
     std::string bin5_part;
     std::string bin6_part;
+    std::string belt_part;
     std::vector<std::string> bin_parts;
     std::vector<std::string> empty_bins;
     std::string empty_bin;
@@ -58,6 +61,9 @@ public:
     std::vector<std::string> bins_arm2;
     std::vector<std::string> parts_already_in_bin;
     std::vector<std::string> bin_part;
+    std::vector<std::string> part_to_pick_conveyor;
+    //counts of parts in various bins
+    int count1, count2, count3, count4, count5, count6 = 0;
 
 private:
     ros::NodeHandle order_manager_nh_;

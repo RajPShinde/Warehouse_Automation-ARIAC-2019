@@ -32,12 +32,17 @@ sensors:
   logical_camera_7:
     type: logical_camera
     pose:
-      xyz: [1.424833, 1.874235, 1.308467]
-      rpy: [-3.141586, 1.2, -3.116456]
+      xyz: [1.383, 3.35, 1.308]
+      rpy: [-3.141, 1.20, -3.11]
+  break_beam_1:
+    type: break_beam
+    pose:
+      xyz: [1.6, 1.31, 0.91] 
+      rpy: [0, 0, 'pi']
   break_beam_2:
     type: break_beam
     pose:
-      xyz: [1.6, 2.10, 0.91] #y = 0.77 - 2.07
+      xyz: [1.6, -0.63, 0.91] 
       rpy: [0, 0, 'pi']
   laser_profiler_1:
     type: laser_profiler
