@@ -54,6 +54,11 @@ public:
     bool PickPart(geometry_msgs::Pose& part_pose);
     bool PickPartconveyor(std::string);
 
+    void sendRobotToConveyor();
+    void SendRobot1();
+    void SendRobot2();
+
+
 
 private:
     ros::NodeHandle robot_controller_nh_;
@@ -102,6 +107,9 @@ private:
     std::vector<double> bin_drop_pose_2;
     std::vector<double> kit_drop_pose_2;
     std::vector<double> belt_drop_pose_2;
+    std::vector<double> flipped_drop_pose_, flipped_arm1_pose_1,
+                        flipped_arm2_pose_1, flipped_arm1_pose_2,
+                        flipped_arm2_pose_2, flipped_arm1_pose_3;
     std::vector<double> conveyor2;
 
     geometry_msgs::Pose home_cart_pose_;

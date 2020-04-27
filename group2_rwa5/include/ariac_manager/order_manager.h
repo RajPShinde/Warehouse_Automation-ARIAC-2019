@@ -26,7 +26,7 @@ public:
     std::string GetProductFrame(std::string product_type);
     std::map<std::string, std::list<std::pair<std::string,geometry_msgs::Pose>>> GetOrder();
     bool PickAndPlace(std::pair<std::string,geometry_msgs::Pose> product_type_pose,int agv_id);
-    bool PickAndPlace(std::pair<std::string,geometry_msgs::Pose> product_type_pose, std::string empty_bin);
+    bool PickAndPlace(std::pair<std::string,geometry_msgs::Pose> product_type_pose, std::string empty_bin, int agv_id);
     void SubmitAGV(int num);
     bool checkOrderUpdate(int,int,std::string, int agv_id);
     void dropallparts(std::vector<std::pair<std::string,geometry_msgs::Pose>>, int agv_id);
@@ -43,6 +43,19 @@ public:
     std::string bin6_part;
     std::vector<std::string> bin_parts;
     std::string empty_bin;
+    std::vector<double> flipped_drop_pose_, flipped_arm1_pose_1,
+                        flipped_arm2_pose_1, flipped_arm1_pose_2,
+                        flipped_arm2_pose_2, flipped_arm1_pose_3,
+                        flipped_arm1_pose_4, flipped_arm1_pose_5,
+                        flipped_arm2_pose_3, flipped_arm1_pose_6,
+                        flipped_arm2_pose_4, kit_drop_pose_;
+    std::vector<double> out_arm2_pose1, out_arm2_pose2, out_arm2_pose3,
+                        out_arm1_pose1, out_arm1_pose2;
+    void FlippedPart(int agv_id, auto pose);
+    double roll, pitch, yaw;
+    tf::Quaternion q;
+    bool isFlipped = false;
+    bool isReachable = true;
 
 private:
     ros::NodeHandle order_manager_nh_;
@@ -52,8 +65,8 @@ private:
     std::vector<osrf_gear::Order> received_orders_;
     AriacSensorManager camera_;
     geometry_msgs::Pose bin_pose;
-    RobotController arm1_;
-    RobotController arm2_;
+    RobotController arm1_, arm2_;
+    // RobotController arm2_;
     tf::TransformListener part_tf_listener_;
     std::vector<double> drop_pose_;
     std::pair<std::string,geometry_msgs::Pose> product_type_pose_;
