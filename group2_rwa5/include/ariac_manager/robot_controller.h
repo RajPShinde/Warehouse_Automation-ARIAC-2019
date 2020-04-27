@@ -54,7 +54,7 @@ public:
     bool PickPart(geometry_msgs::Pose& part_pose);
     bool PickPartconveyor(std::string);
 
-    void sendRobotToConveyor();
+//     void sendRobotToConveyor();
     void SendRobot1();
     void SendRobot2();
 
