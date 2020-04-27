@@ -62,6 +62,7 @@ public:
     std::vector<std::string> parts_already_in_bin;
     std::vector<std::string> bin_part;
     std::vector<std::string> part_to_pick_conveyor;
+    int threshold = 4;
     //counts of parts in various bins
     int count1, count2, count3, count4, count5, count6 = 0;
 
