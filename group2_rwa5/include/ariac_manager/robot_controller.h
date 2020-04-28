@@ -123,7 +123,7 @@ private:
     double roll_def_,pitch_def_,yaw_def_;
     tf::Quaternion q;
     int counter_;
-    bool gripper_state_, drop_flag_,drop,pick,is_faulty_, gripper_state_2;
+    bool gripper_state_, drop_flag_,drop,pick,is_faulty_,is_faulty2_, gripper_state_2;
     ros::Subscriber quality_control_camera_subscriber_, quality_control_camera_2_subscriber_;
     geometry_msgs::Pose final_;
     geometry_msgs::Pose grab_pose_;

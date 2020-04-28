@@ -77,6 +77,14 @@ void AriacOrderManager::OrderCallback(const osrf_gear::Order::ConstPtr& order_ms
             ROS_INFO_STREAM("Order ID: " << order_id);
             ROS_INFO_STREAM("Shipment Type: " << shipment_type);
             ROS_INFO_STREAM("AGV ID: " << agv_id);
+            if(agv_id==2)
+            {
+            	arm1_.SendRobotPosition({2.6, 3.11, -1.60, 2.0, 4.30, -1.53, 0});
+            }
+            else
+            {
+            	arm2_.SendRobotPosition({-2.6, 3.11, -1.60, 2.0, 4.30, -1.53, 0});
+            }
 
             for (const auto &product: products){
 
@@ -187,16 +195,14 @@ bool AriacOrderManager::PickAndPlace(const std::pair<std::string,geometry_msgs::
 
 
     if(product_type == "pulley_part")
-        // part_pose.position.z += 0.05;
         part_pose.position.z += 0.037;
-
-    if(product_type == "piston_rod_part")
+    else if(product_type == "piston_rod_part")
         part_pose.position.z -= 0.0157;
-    if(product_type == "gear_part")
+    else if(product_type == "gear_part")
         part_pose.position.z -= 0.012;
-    if(product_type == "disk_part")
+    else if(product_type == "disk_part")
         part_pose.position.z = part_pose.position.z;
-    if(product_type == "gasket_part")
+    else if(product_type == "gasket_part")
         part_pose.position.z = part_pose.position.z;
 
     //--task the robot to pick up this part again from the bin
@@ -219,27 +225,19 @@ bool AriacOrderManager::PickAndPlace(const std::pair<std::string,geometry_msgs::
     if(agv_id==1){
         StampedPose_in.header.frame_id = "/kit_tray_1";
         StampedPose_in.pose = drop_pose;
-        // ROS_INFO_STREAM("StampedPose_int (" << StampedPose_in.pose.position.x <<","<< StampedPose_in.pose.position.y << "," << StampedPose_in.pose.position.z<<")");
         part_tf_listener_.transformPose("/world",StampedPose_in,StampedPose_out);
-        // StampedPose_out.pose.position.x += 0.2;
-        // StampedPose_out.pose.position.y += 0.2;
-        // ROS_INFO_STREAM("StampedPose_out (" << StampedPose_out.pose.position.x <<","<< StampedPose_out.pose.position.y << "," << StampedPose_out.pose.position.z<<")");
     }
-    else{
+    else if(agv_id==2){
         StampedPose_in.header.frame_id = "/kit_tray_2";
         StampedPose_in.pose = drop_pose;
-        //ROS_INFO_STREAM("StampedPose_in " << StampedPose_in.pose.position.x);
         part_tf_listener_.transformPose("/world",StampedPose_in,StampedPose_out);
-        // StampedPose_out.pose.position.z += 0.1;
-        // StampedPose_out.pose.position.y += 0.2;
-        //ROS_INFO_STREAM("StampedPose_out " << StampedPose_out.pose.position.x);
     }
 
     // This is checking if part is faulty ior not
     bool success = false;
     if( not success and agv_id == 1) {
       success = arm1_.DropPart(StampedPose_out.pose, agv_id); //robot_controller
-    } else {
+    } else if(not success and agv_id == 2){
       success = arm2_.DropPart(StampedPose_out.pose, agv_id);
     }
     if(placed_parts.size()!=0){
@@ -251,7 +249,6 @@ bool AriacOrderManager::PickAndPlace(const std::pair<std::string,geometry_msgs::
     else {
       placed_parts.push_back(std::make_pair(product_type,StampedPose_out.pose));
     }
-
 
     return success;
 
@@ -268,7 +265,8 @@ void AriacOrderManager::FlippedPart(int agv_id, auto pose) {
     arm1_.SendRobotPosition(flipped_arm1_pose_3);
     this->arm2_.GripperToggle2(false);
     arm2_.SendRobotPosition2(flipped_arm2_pose_5);
-    arm2_.SendRobot2();
+    // arm2_.SendRobot2();
+    arm2_.SendRobotPosition({-2.6, 3.11, -1.60, 2.0, 4.30, -1.53, 0});
   }
   if (agv_id == 2 and isReachable == true) {
     bool failed_pick = arm1_.PickPart(pose, 1);
@@ -278,7 +276,8 @@ void AriacOrderManager::FlippedPart(int agv_id, auto pose) {
     arm2_.SendRobotPosition2(flipped_arm2_pose_4);
     this->arm2_.GripperToggle2(true);
     this->arm1_.GripperToggle(false);
-    arm1_.SendRobot1();
+    // arm1_.SendRobot1();
+    arm1_.SendRobotPosition({2.6, 3.11, -1.60, 2.0, 4.30, -1.53, 0});
   }
   if (agv_id == 1 and isReachable == false) {
     bool failed_pick = arm1_.PickPart(pose, 1);
@@ -291,7 +290,8 @@ void AriacOrderManager::FlippedPart(int agv_id, auto pose) {
     this->arm1_.GripperToggle(true);
     arm1_.SendRobotPosition(flipped_arm1_pose_3);
     this->arm2_.GripperToggle2(false);
-    arm2_.SendRobot2();
+    // arm2_.SendRobot2();
+    arm2_.SendRobotPosition({-2.6, 3.11, -1.60, 2.0, 4.30, -1.53, 0});
   }
   if (agv_id == 2 and isReachable == false) {
     bool failed_pick = arm2_.PickPart(pose);
@@ -304,7 +304,8 @@ void AriacOrderManager::FlippedPart(int agv_id, auto pose) {
     this->arm2_.GripperToggle2(true);
     arm2_.SendRobotPosition2(out_arm2_pose3);
     this->arm1_.GripperToggle(false);
-    arm1_.SendRobot1();
+    // arm1_.SendRobot1();
+    arm1_.SendRobotPosition({2.6, 3.11, -1.60, 2.0, 4.30, -1.53, 0});
   }
   isFlipped=false;
 }
@@ -338,6 +339,7 @@ void AriacOrderManager::ExecuteOrder() {
 
         for (const auto &shipment: shipments){
             auto shipment_type = shipment.shipment_type;
+            ROS_INFO_STREAM(shipment.agv_id);
             auto agv = shipment.agv_id.back();//--this returns a char
             //-- if agv is any then we use AGV1, else we convert agv id to int
             //--agv-'0' converts '1' to 1 and '2' to 2
@@ -375,18 +377,25 @@ void AriacOrderManager::ExecuteOrder() {
                 ROS_INFO_STREAM("Roll: " << roll);
                 // if (roll == -3.14159 || roll == 3.14159) {
                 if(roll!=0){
-                  ROS_INFO_STREAM("isFlipped made true");
+                  ROS_INFO_STREAM("Part is to be Flipped");
                   isFlipped = true;
                 }
-                // isFlipped = true;
+                // isFlipped = true;Running SendRobotPosition2
                 if (product.type == bin1_part and agv_id == 2 and isFlipped == true) {
                   isReachable = false;
                 }
                 if (product.type == bin6_part and agv_id == 1 and isFlipped == true) {
                   isReachable = false;
                 }
-
+                if(agv_id==1)
+                {
                 StampedPose_in.header.frame_id = "/kit_tray_1";
+                }
+                else if(agv_id==2)
+                {
+                StampedPose_in.header.frame_id = "/kit_tray_2";
+                }
+
                 StampedPose_in.pose = product.pose;
                 part_tf_listener_.transformPose("/world",StampedPose_in,StampedPose_out);
 

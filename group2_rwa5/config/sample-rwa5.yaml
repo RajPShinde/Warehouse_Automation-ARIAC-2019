@@ -18,7 +18,7 @@ orders:
   order_0:
     announcement_condition: time
     announcement_condition_value: 0.0
-    # destinations: [agv2]
+    destinations: [agv2]
     shipment_count: 1
     products:
       product_0:
@@ -49,7 +49,7 @@ orders:
   order_0_update_0:
     announcement_condition: wanted_products
     announcement_condition_value: 4
-    # destinations: [agv2]
+    destinations: [agv2]
     shipment_count: 1
     products:
       product_0:
@@ -73,7 +73,7 @@ orders:
           xyz: [-0.15, 0.15, 0]
           rpy: [0, 0, 0]
       product_4:
-        type: order_part3
+        type: order_part1
         pose:
           xyz: [0.0, 0.15, 0]
           rpy: [0, 0, 0]
@@ -121,3 +121,5 @@ belt_models:
 
 faulty_products:
   - pulley_part_0
+  - pulley_part_1
+  - pulley_part_2
