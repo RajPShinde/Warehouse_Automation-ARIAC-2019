@@ -22,7 +22,7 @@ AriacOrderManager::AriacOrderManager(): arm1_{"arm1"}, arm2_{"arm2"}
      */
     flipped_arm1_pose_1 = {1.18, 4.59, -0.50, 0.99, 4.31, -1.53, 0};
     flipped_arm1_pose_2 = {1.18, 4.59, -1.50, 1.32, 4.31, -1.53, 0};
-    flipped_arm1_pose_3 = {1.13, 4.56, -1.00, 1.34, 4.31, -1.53, 0};
+    flipped_arm1_pose_3 = {1.11, 4.56, -1.00, 1.34, 4.31, -1.53, 0};
     flipped_arm1_pose_4 = {1.11, 4.59, -1.00, 1.30, 4.31, -1.53, 0};
 
     // for agv_id = 2
@@ -30,6 +30,7 @@ AriacOrderManager::AriacOrderManager(): arm1_{"arm1"}, arm2_{"arm2"}
     flipped_arm1_pose_6 = {-0.50, 4.59, -0.50, 0.99, 4.32, 1.55, 0};
     flipped_arm2_pose_3 = {-0.59, 1.30, -1.37, 1.84, 4.10, -1.53, 0};
     flipped_arm2_pose_4 = {-0.59, 1.30, -1.37, 1.97, 4.10, -1.53, 0};
+    flipped_arm2_pose_5 = {0.72, 1.40, -0.47, 1.00, 4.35, 1.51, 0};
 
     flipped_arm2_pose_1 = {0.69, 1.40, -0.47, 0.95, 4.31, -1.53, 0};
     flipped_arm2_pose_2 = {0.72, 1.40, -0.47, 0.85, 4.35, 1.51, 0};
@@ -266,6 +267,7 @@ void AriacOrderManager::FlippedPart(int agv_id, auto pose) {
     arm1_.SendRobotPosition(flipped_arm1_pose_4);
     arm1_.SendRobotPosition(flipped_arm1_pose_3);
     this->arm2_.GripperToggle2(false);
+    arm2_.SendRobotPosition2(flipped_arm2_pose_5);
     arm2_.SendRobot2();
   }
   if (agv_id == 2 and isReachable == true) {
