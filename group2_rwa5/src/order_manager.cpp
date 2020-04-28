@@ -17,13 +17,13 @@ AriacOrderManager::AriacOrderManager(): arm1_{"arm1"}, arm2_{"arm2"}
      * [2] = shoulder_lift_joint
      * [3] = elbow_joint
      * [4] = wrist_1_joint
-     * [5] = wrist_2_joint
+     * [5] = wrist_2_joint3
      * [6] = wrist_3_joint
      */
     flipped_arm1_pose_1 = {1.18, 4.59, -0.50, 0.99, 4.31, -1.53, 0};
     flipped_arm1_pose_2 = {1.18, 4.59, -1.50, 1.32, 4.31, -1.53, 0};
     flipped_arm1_pose_3 = {1.13, 4.56, -1.00, 1.34, 4.31, -1.53, 0};
-    flipped_arm1_pose_4 = {1.11, 4.59, -1.00, 1.35, 4.31, -1.53, 0};
+    flipped_arm1_pose_4 = {1.11, 4.59, -1.00, 1.30, 4.31, -1.53, 0};
 
     // for agv_id = 2
     flipped_arm1_pose_5 = {0.50, 4.59, -0.50, 0.99, 4.32, 1.55, 0};
@@ -139,12 +139,12 @@ std::string AriacOrderManager::GetProductFrame(std::string product_type) {
     } else {
          ROS_ERROR_STREAM("No product frame found for " << product_type);
          ROS_INFO_STREAM("Getting " << product_type << " from the conveyor Belt");
-//		else return "NOO";
+//      else return "NOO";
 
          bool failed_pick = arm1_.PickPartconveyor(product_type);
-		 while(!failed_pick){
-			 failed_pick = arm1_.PickPartconveyor(product_type);  //robot_controller
-		 }
+         while(!failed_pick){
+             failed_pick = arm1_.PickPartconveyor(product_type);  //robot_controller
+         }
             bin_pose.position.x=-0.2;
             bin_pose.position.y=-0.2;
             bin_pose.position.z=0.1;
@@ -186,10 +186,8 @@ bool AriacOrderManager::PickAndPlace(const std::pair<std::string,geometry_msgs::
 
 
     if(product_type == "pulley_part")
-
-        part_pose.position.z += 0.05;
-
-//         part_pose.position.z += 0.037;
+        // part_pose.position.z += 0.05;
+        part_pose.position.z += 0.037;
 
     if(product_type == "piston_rod_part")
         part_pose.position.z -= 0.0157;
@@ -265,8 +263,8 @@ void AriacOrderManager::FlippedPart(int agv_id, auto pose) {
     bool failed_pick = arm2_.PickPart(pose);
     arm2_.SendRobotPosition2(flipped_arm2_pose_2);
     this->arm1_.GripperToggle(true);
-    arm1_.SendRobotPosition(flipped_arm1_pose_3);
     arm1_.SendRobotPosition(flipped_arm1_pose_4);
+    arm1_.SendRobotPosition(flipped_arm1_pose_3);
     this->arm2_.GripperToggle2(false);
     arm2_.SendRobot2();
   }
@@ -306,6 +304,7 @@ void AriacOrderManager::FlippedPart(int agv_id, auto pose) {
     this->arm1_.GripperToggle(false);
     arm1_.SendRobot1();
   }
+  isFlipped=false;
 }
 
 void AriacOrderManager::ExecuteOrder() {
@@ -373,10 +372,11 @@ void AriacOrderManager::ExecuteOrder() {
                 tf::Matrix3x3(q).getRPY(roll, pitch, yaw);
                 ROS_INFO_STREAM("Roll: " << roll);
                 // if (roll == -3.14159 || roll == 3.14159) {
-                //   ROS_INFO_STREAM("isFlipped made true");
-                //   isFlipped = true;
-                // }
-                isFlipped = true;
+                if(roll!=0){
+                  ROS_INFO_STREAM("isFlipped made true");
+                  isFlipped = true;
+                }
+                // isFlipped = true;
                 if (product.type == bin1_part and agv_id == 2 and isFlipped == true) {
                   isReachable = false;
                 }

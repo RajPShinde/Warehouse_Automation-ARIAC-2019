@@ -133,27 +133,27 @@ robot_move_group_2(robot_controller_options_2) {
     drop_flag_ = false;
 
     quality_control_camera_subscriber_ = robot_controller_nh_.subscribe("/ariac/quality_control_sensor_1", 100,
-    		&RobotController::qualityControlSensor1Callback, this);
+        &RobotController::qualityControlSensor1Callback, this);
     quality_control_camera_2_subscriber_ = robot_controller_nh_.subscribe("/ariac/quality_control_sensor_2", 100,
-    		&RobotController::qualityControlSensor2Callback, this);
+        &RobotController::qualityControlSensor2Callback, this);
 
     is_faulty_ = false;
 }
 
 void RobotController::qualityControlSensor1Callback(const osrf_gear::LogicalCameraImage::ConstPtr &image_msg) {
-	is_faulty_ = !image_msg->models.empty(); // if not empty then part is faulty
-	if(is_faulty_){
-		ROS_WARN_STREAM("Product is faulty and models.size is " << image_msg->models.size());
-	}
-	// else ROS_INFO_STREAM_THROTTLE(7, "prodcut is NOTTT faulty....and models.size is " << image_msg->models.size());
+  is_faulty_ = !image_msg->models.empty(); // if not empty then part is faulty
+  if(is_faulty_){
+    ROS_WARN_STREAM("Product is faulty and models.size is " << image_msg->models.size());
+  }
+  // else ROS_INFO_STREAM_THROTTLE(7, "prodcut is NOTTT faulty....and models.size is " << image_msg->models.size());
 }
 
 void RobotController::qualityControlSensor2Callback(const osrf_gear::LogicalCameraImage::ConstPtr &image_msg) {
-	is_faulty_ = !image_msg->models.empty(); // if not empty then part is faulty
-	if(is_faulty_){
-		ROS_WARN_STREAM("Product is faulty and models.size is " << image_msg->models.size());
-	}
-	// else ROS_INFO_STREAM_THROTTLE(7, "prodcut is NOTTT faulty....and models.size is " << image_msg->models.size());
+  is_faulty_ = !image_msg->models.empty(); // if not empty then part is faulty
+  if(is_faulty_){
+    ROS_WARN_STREAM("Product is faulty and models.size is " << image_msg->models.size());
+  }
+  // else ROS_INFO_STREAM_THROTTLE(7, "prodcut is NOTTT faulty....and models.size is " << image_msg->models.size());
 }
 
 RobotController::~RobotController() {}
@@ -505,7 +505,7 @@ bool RobotController::PickPart(geometry_msgs::Pose& part_pose, int agv_id) {
 }
 
 void RobotController::sendRobotToConveyor(){
-	SendRobotPosition(conveyor);
+  SendRobotPosition(conveyor);
 }
 
 bool RobotController::PickPartconveyor(std::string product){
@@ -652,9 +652,9 @@ bool RobotController::DropPart(geometry_msgs::Pose part_pose) {
 
   ros::Duration(time).sleep();
   ros::spinOnce();
-	ROS_INFO_STREAM("Moving to end of conveyor");
+  ROS_INFO_STREAM("Moving to end of conveyor");
 
-	ros::Duration(time).sleep();
+  ros::Duration(time).sleep();
 
   this->GripperToggle2(false);
 
