@@ -50,7 +50,7 @@ public:
                         flipped_arm2_pose_3, flipped_arm1_pose_6,
                         flipped_arm2_pose_4, kit_drop_pose_;
     std::vector<double> out_arm2_pose1, out_arm2_pose2, out_arm2_pose3,
-                        out_arm1_pose1, out_arm1_pose2;
+                        out_arm1_pose1, out_arm1_pose2, flipped_arm2_pose_5;
     void FlippedPart(int agv_id, auto pose);
     double roll, pitch, yaw;
     tf::Quaternion q;
