@@ -74,7 +74,9 @@ int main(int argc, char **argv) {
     ros::Duration(2.0).sleep();
     //manager.SetScannedProducts();
     
-    manager.ExecuteOrder();
+    // manager.ExecuteOrder();
+    manager.ExecuteOrderNew();
+
 
     ros::spin();  // This executes callbacks on new data until ctrl-c.
 

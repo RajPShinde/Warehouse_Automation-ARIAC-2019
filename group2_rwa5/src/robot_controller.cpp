@@ -56,7 +56,7 @@ robot_move_group_2(robot_controller_options_2) {
 
     home_joint_pose_2 = {0, 3.11, -1.60, 2.0, 4.30, -1.53, 0};
 
-    kit_drop_pose_2 = {-2.75, -1.57, -1.60, 2.0, 4.30, -1.53, 1.57};
+    kit_drop_pose_2 = {-2.75, -1.57, -1.60, 2.0, 4.30, -1, 0};
     flipped_drop_pose_ = {1.18, 1.40, -0.65, 1.80, 5.05, -0.10, 0};
 
     flipped_arm1_pose_1 = {1.18, 4.59, -0.50, 0.99, 4.31, -1.53, 0};
@@ -151,7 +151,7 @@ void RobotController::qualityControlSensor1Callback(const osrf_gear::LogicalCame
 
 void RobotController::qualityControlSensor2Callback(const osrf_gear::LogicalCameraImage::ConstPtr &image_msg) {
   is_faulty2_ = !image_msg->models.empty(); // if not empty then part is faulty
-  if(is_faulty_){
+  if(is_faulty2_){
     ROS_WARN_STREAM("Product is faulty and models.size is " << image_msg->models.size());
   }
   // else ROS_INFO_STREAM_THROTTLE(7, "prodcut is NOTTT faulty....and models.size is " << image_msg->models.size());
@@ -293,7 +293,7 @@ void RobotController::SendRobotPosition2(std::vector<double> pose) {
     spinner.start();
     if (this->Planner()) {
         robot_move_group_2.move();
-        ros::Duration(time).sleep();
+        ros::Duration(0.8).sleep();
     }
      ros::Duration(time).sleep();
 }

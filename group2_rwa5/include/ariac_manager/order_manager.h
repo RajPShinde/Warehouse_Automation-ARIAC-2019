@@ -4,6 +4,7 @@
 #include <map>
 #include <string>
 #include <iostream>
+#include <algorithm>
 
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/PoseArray.h>
@@ -23,6 +24,7 @@ public:
     ~AriacOrderManager();
     void OrderCallback(const osrf_gear::Order::ConstPtr& order_msg);
     void ExecuteOrder();
+    void ExecuteOrderNew();
     std::string GetProductFrame(std::string product_type);
     std::map<std::string, std::list<std::pair<std::string,geometry_msgs::Pose>>> GetOrder();
     bool PickAndPlace(std::pair<std::string,geometry_msgs::Pose> product_type_pose,int agv_id);
@@ -41,6 +43,8 @@ public:
     std::string bin4_part;
     std::string bin5_part;
     std::string bin6_part;
+    std::string belt_part_1;
+    std::string belt_part_2;
     std::vector<std::string> bin_parts;
     std::string empty_bin;
     std::vector<double> flipped_drop_pose_, flipped_arm1_pose_1,
@@ -56,6 +60,28 @@ public:
     tf::Quaternion q;
     bool isFlipped = false;
     bool isReachable = true;
+    std::vector<std::string> empty_bins;
+    std::vector<geometry_msgs::Pose> FillBin(int bin_number, std::string conveyor_part_type);
+    double round_up(double value, int decimal_places);
+    void UpdateBin();
+    std::vector<std::string> DecideBinArm(std::string conveyor_part);
+    std::vector<std::vector<geometry_msgs::Pose>> all_empty_bins_pose;
+    std::vector<geometry_msgs::Pose> bin1_poses;
+    std::vector<geometry_msgs::Pose> bin2_poses;
+    std::vector<geometry_msgs::Pose> bin3_poses;
+    std::vector<geometry_msgs::Pose> bin4_poses;
+    std::vector<geometry_msgs::Pose> bin5_poses;
+    std::vector<geometry_msgs::Pose> bin6_poses;    
+    std::vector<std::string> bins_arm1;
+    std::vector<std::string> bins_arm2;
+    std::vector<std::string> parts_already_in_bin;
+    std::vector<std::string> bin_part;
+    std::vector<std::string> part_to_pick_conveyor;
+    int threshold = 4;
+    bool StopConveyorPick = false;
+    //counts of parts in various bins
+    int count1, count2, count3, count4, count5, count6 = 0;
+    int i_bin1, i_bin2, i_bin3, i_bin4, i_bin5, i_bin6 = 0;
 
 private:
     ros::NodeHandle order_manager_nh_;

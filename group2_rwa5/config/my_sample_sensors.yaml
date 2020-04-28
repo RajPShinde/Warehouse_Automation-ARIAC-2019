@@ -1,52 +1,51 @@
 sensors:
-  proximity_sensor_1:
-    type: proximity_sensor
-    pose:
-      xyz: [0.95, 2.6, 0.92]
-      rpy: [0, 0, 0]
   logical_camera_1:
     type: logical_camera
     pose:
-      xyz: [-0.700, -1.915, 1.003]
-      rpy: [1.565, 0.937, 0.006]
+      xyz: [-0.331, -1.915, 1.248]
+      rpy: [1.56, 1.50, -0.002]
   logical_camera_2:
     type: logical_camera
     pose:
-      xyz: [-0.700, -1.155, 1.003]
-      rpy: [1.565, 0.937, 0.006]
+      xyz: [-0.331, -1.155, 1.248]
+      rpy: [1.56, 1.50, -0.002]
   logical_camera_3:
     type: logical_camera
     pose:
-      xyz: [-0.700, -0.385, 1.003]
-      rpy: [1.565, 0.937, 0.006]
+      xyz: [-0.331, -0.385, 1.248]
+      rpy: [1.56, 1.50, -0.002]
   logical_camera_4:
     type: logical_camera
     pose:
-      xyz: [-0.700, 0.407, 1.003]
-      rpy: [1.565, 0.937, 0.006]
+      xyz: [-0.331, 0.376, 1.248]
+      rpy: [1.56, 1.50, -0.002]
   logical_camera_5:
     type: logical_camera
     pose:
-      xyz: [-0.700, 1.142, 1.003]
-      rpy: [1.565, 0.937, 0.006]
+      xyz: [-0.331, 1.142, 1.248]
+      rpy: [1.56, 1.50, -0.002]
   logical_camera_6:
     type: logical_camera
     pose:
-      xyz: [-0.700, 1.910, 1.003]
-      rpy: [1.565, 0.937, 0.006]
+      xyz: [-0.331, 1.910, 1.248]
+      rpy: [1.56, 1.50, -0.002]
   logical_camera_7:
     type: logical_camera
     pose:
-      xyz: [1.424833, 1.874235, 1.308467]
-      rpy: [-3.141586, 1.2, -3.116456]
+      xyz: [1.383, 1.352, 1.308]
+      rpy: [-3.141, 1.20, -3.11]
+  logical_camera_8:
+    type: logical_camera
+    pose:
+      xyz: [1.383, -0.58, 1.308]
+      rpy: [-3.141, 1.20, -3.11]
   break_beam_1:
     type: break_beam
     pose:
-      xyz: [1.6, -2.10, 0.91] #y = 0.77 - 2.07
+      xyz: [1.6, 1.31, 0.91] 
       rpy: [0, 0, 'pi']
   break_beam_2:
     type: break_beam
     pose:
-      xyz: [1.6, 2.10, 0.91] #y = 0.77 - 2.07
+      xyz: [1.6, -0.63, 0.91] 
       rpy: [0, 0, 'pi']
-
