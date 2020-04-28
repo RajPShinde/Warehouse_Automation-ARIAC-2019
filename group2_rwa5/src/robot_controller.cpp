@@ -690,12 +690,12 @@ bool RobotController::PickPartconveyor(std::string product){
   place_pose_.position.x = -0.288;
   place_pose_.position.y = 1.144; //0.7 - 1.8
   place_pose_.position.z = 0.8;
-
   grab_pose_.position.z = 0.928;
   // int trial = beam.object_derived;
   // ros::spin();
   while(ros::ok())
   {
+    std::string trial_string = beam.BeltCamera1Part();
     // ros::Subscriber logical_camera_subscriber_7 = node.subscribe("/ariac/logical_camera_7", 10, 
     //           &AriacSensorManager::LogicalCamera7Callback, &AriacSensorManager);
     // ROS_INFO_STREAM("Inside...");

@@ -38,10 +38,11 @@ public:
     void LogicalCamera5Callback(const osrf_gear::LogicalCameraImage::ConstPtr&);
     void LogicalCamera6Callback(const osrf_gear::LogicalCameraImage::ConstPtr&);
     void LogicalCamera7Callback(const osrf_gear::LogicalCameraImage::ConstPtr&);
+    void LogicalCamera8Callback(const osrf_gear::LogicalCameraImage::ConstPtr&);
     void break_beam_callback_1(const osrf_gear::Proximity::ConstPtr &);
     void break_beam_callback_2(const osrf_gear::Proximity::ConstPtr &);
     bool getBeam();
-    bool init1, init2, init3 , init4, init5, init6, init7;
+    bool init1, init2, init3 , init4, init5, init6, init7, init8;
     std::vector<std::string> order_parts;
     std::vector<std::string> belt_parts_lcam;
     std::vector<std::string> all_parts_belt;
@@ -50,6 +51,7 @@ public:
     bool gripper_state_1;
     int break_beam_counter = 0;
     bool grab_now_1 = false;
+    bool grab_now_2 = false;
 
     int object_derived = 0;
     bool arm1_engage_derived = false;
@@ -78,7 +80,8 @@ public:
     std::string LogicalCamera4PartType();
     std::string LogicalCamera5PartType();
     std::string LogicalCamera6PartType();
-    std::string BeltCameraPart();
+    std::string BeltCamera1Part();
+    std::string BeltCamera2Part();
     geometry_msgs::Pose BinGetPartPose(const std::string& src_frame,
                                                            std::string product_type, std::string num);
 
@@ -89,6 +92,7 @@ public:
     std::string cam5_part_type;
     std::string cam6_part_type;
     std::string cam7_part_type;
+    std::string cam8_part_type;
 
     int count_bin1 = 0;
     int count_bin2 = 0;
@@ -96,6 +100,9 @@ public:
     int count_bin4 = 0;
     int count_bin5 = 0;
     int count_bin6 = 0;
+
+    std::string logicalcam_7;
+    std::string logicalcam_8;
 
 
 private:
@@ -107,6 +114,7 @@ private:
     ros::Subscriber camera_5_subscriber_;
     ros::Subscriber camera_6_subscriber_;
     ros::Subscriber camera_7_subscriber_;
+    ros::Subscriber camera_8_subscriber_;
     ros::Subscriber break_beam_subscriber_2_;
     ros::Subscriber break_beam_subscriber_1_;
 
