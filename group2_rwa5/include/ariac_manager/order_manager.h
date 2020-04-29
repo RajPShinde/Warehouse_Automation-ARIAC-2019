@@ -64,7 +64,9 @@ public:
     std::vector<geometry_msgs::Pose> FillBin(int bin_number, std::string conveyor_part_type);
     double round_up(double value, int decimal_places);
     void UpdateBin();
-    std::vector<std::string> DecideBinArm(std::string conveyor_part);
+    void grasp(int arm, std::string part);
+    bool PickPartconveyor();
+    int DecideBinArm(std::string conveyor_part);
     std::vector<std::vector<geometry_msgs::Pose>> all_empty_bins_pose;
     std::vector<geometry_msgs::Pose> bin1_poses;
     std::vector<geometry_msgs::Pose> bin2_poses;

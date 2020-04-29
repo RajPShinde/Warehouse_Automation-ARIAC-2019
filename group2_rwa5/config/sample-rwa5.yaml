@@ -113,7 +113,7 @@ models_over_bins:
         num_models_y: 3
 
 belt_models:
-  pulley_part:
+  piston_rod_part:
     10.0:
       pose:
         xyz: [0.0, 0.0, 0.1]

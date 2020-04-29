@@ -41,7 +41,8 @@ public:
     void LogicalCamera8Callback(const osrf_gear::LogicalCameraImage::ConstPtr&);
     void break_beam_callback_1(const osrf_gear::Proximity::ConstPtr &);
     void break_beam_callback_2(const osrf_gear::Proximity::ConstPtr &);
-    bool getBeam();
+    bool getBeam1();
+    bool getBeam2();
     bool init1, init2, init3 , init4, init5, init6, init7, init8;
     std::vector<std::string> order_parts;
     std::vector<std::string> belt_parts_lcam;
