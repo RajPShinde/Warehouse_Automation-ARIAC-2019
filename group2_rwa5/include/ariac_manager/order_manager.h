@@ -64,7 +64,7 @@ public:
     std::vector<geometry_msgs::Pose> FillBin(int bin_number, std::string conveyor_part_type);
     double round_up(double value, int decimal_places);
     void UpdateBin();
-    void grasp(int arm, std::string part);
+    bool grasp(int arm, std::string part);
     bool PickPartconveyor();
     int DecideBinArm(std::string conveyor_part);
     std::vector<std::vector<geometry_msgs::Pose>> all_empty_bins_pose;
@@ -108,5 +108,7 @@ private:
     int piston_count_ = 0;
     int gear_count_ = 0;
     int pulley_count_ = 0;
+    int disk_count_ = 0;
+    int gasket_count_ = 0;
 
 };

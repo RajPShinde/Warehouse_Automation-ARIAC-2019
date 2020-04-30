@@ -159,10 +159,7 @@ void RobotController::qualityControlSensor2Callback(const osrf_gear::LogicalCame
 
 RobotController::~RobotController() {}
 
-/**
- *
- * @return
- */
+
 bool RobotController::Planner() {
     ROS_INFO_STREAM("Planning 1 started...");
     if (robot_move_group_.plan(robot_planner_) ==
@@ -177,27 +174,12 @@ bool RobotController::Planner() {
     return plan_success_;
 }
 
-// bool RobotController::Planner2() {
-//     ROS_INFO_STREAM("Planning 2 started...");
-//     if (robot_move_group_2.plan(robot_planner_2) ==
-//         moveit::planning_interface::MoveItErrorCode::SUCCESS) {
-//         plan_success_2 = true;
-//         ROS_INFO_STREAM("Planner 2 succeeded!");
-//     } else {
-//         plan_success_2 = false;
-//         ROS_WARN_STREAM("Planner 2 failed!");
-//     }
-//
-//     return plan_success_2;
-// }
-
-
 void RobotController::Execute() {
     ros::AsyncSpinner spinner(4);
     spinner.start();
     if (this->Planner()) {
         robot_move_group_.move();
-        ros::Duration(time).sleep();
+        // ros::Duration(0.1).sleep();
     }
 }
 
@@ -253,13 +235,13 @@ void RobotController::GoToTarget(
             robot_move_group_.computeCartesianPath(waypoints, 0.01, 0.0, traj, true);
 
     ROS_WARN_STREAM("Fraction: " << fraction * 100);
-    ros::Duration(time).sleep();
+    ros::Duration(1.0).sleep();
 
     robot_planner_.trajectory_ = traj;
 
     //if (fraction >= 0.3) {
         robot_move_group_.execute(robot_planner_);
-        ros::Duration(time).sleep();
+        ros::Duration(1.0).sleep();
 //    } else {
 //        ROS_ERROR_STREAM("Safe Trajectory not found!");
 //    }
@@ -347,23 +329,24 @@ void RobotController::GripperToggle2(const bool& state) {
         ROS_WARN_STREAM("Gripper activation failed!");
     }
 }
-void RobotController::go(geometry_msgs::Pose part_pose)
+bool RobotController::go(geometry_msgs::Pose part_pose)
 {
     ros::Duration(time).sleep();
     auto temp_pose = part_pose;
-    // auto temp_pose = agv_position_;
-    // temp_pose.position.z += 0.35;
-    // Going to kit here
-    // GoToTarget(part_pose,0);
+
     int n=1;
-   while (!gripper_state_ || n!=5) {
-          part_pose.position.z -= 0.004;
-          this->GoToTarget({temp_pose, part_pose},0);
-          // GoToTarget(part_pose);
-          this->GripperToggle(true);
+   while (!gripper_state_) {
+          GoToTarget({temp_pose, part_pose},0);
+          part_pose.position.z -= 0.002;
+          // GoToTarget(part_pose)
           n=n+1;
           ros::spinOnce();
+          if(n==3)
+          {
+            return gripper_state_;
+          }
     }
+    return gripper_state_;
 }
 
 bool RobotController::DropPart(geometry_msgs::Pose part_pose, int agv_id) {
@@ -386,7 +369,7 @@ bool RobotController::DropPart(geometry_msgs::Pose part_pose, int agv_id) {
     temp_pose.position.z += 0.35;
     // Going to kit here
     GoToTarget({temp_pose, part_pose},0);
-    // ros::Duration(0.5).sleep();
+    ros::Duration(1.0).sleep();
     GripperToggle(false);
     SendRobotPosition(kit_drop_pose_);
     ROS_INFO_STREAM("Checking if part if faulty");
@@ -422,7 +405,7 @@ bool RobotController::DropPart(geometry_msgs::Pose part_pose, int agv_id) {
     temp_pose.position.z += 0.35;
     // Going to kit here
     GoToTarget({temp_pose, part_pose},0);
-    // ros::Duration(0.5).sleep();
+    ros::Duration(1.0).sleep();
     GripperToggle2(false);
     SendRobotPosition2(kit_drop_pose_2);
     ROS_INFO_STREAM("Checking if part if faulty");
@@ -442,8 +425,8 @@ bool RobotController::DropPart(geometry_msgs::Pose part_pose, int agv_id) {
   }
     else if(agv_id==10)
   {
-    SendRobotPosition2({0.0,1.57,-2.27,-1.51,-0.92,1.55,0});
-    SendRobotPosition2({0.0,3.11,-1.21,2.56,3.3,-1.51,0});
+    SendRobotPosition({0.0,-1.57,-2.27,-1.51,-0.92,1.55,0});
+    // SendRobotPosition({0.0,3.11,-1.21,2.56,3.3,-1.51,0});
     counter_++;
     pick = false;
     drop = true;
@@ -454,17 +437,17 @@ bool RobotController::DropPart(geometry_msgs::Pose part_pose, int agv_id) {
     temp_pose.position.z += 0.35;
     // Going to kit here
     GoToTarget({temp_pose, part_pose},0);
-    // ros::Duration(0.5).sleep();
+    ros::Duration(1.0).sleep();
     GripperToggle(false);
     ros::spinOnce();
-    SendRobotPosition2({0.0,1.57,-2.27,-1.51,-0.92,1.55,0});
-    SendRobotPosition2({0.0,3.14,-2.27,-1.51,-0.92,1.55,0});
+    SendRobotPosition({0.0,-1.57,-2.27,-1.51,-0.92,1.55,0});
+    // SendRobotPosition({0.0,3.14,-2.27,-1.51,-0.92,1.55,0});
     return drop;
   }
   else if(agv_id==20)
   {
-    SendRobotPosition2({0.0,-1.57,-2.27,-1.51,-0.92,1.55,0});
-    SendRobotPosition2({0.0,3.11,-1.21,2.56,3.3,-1.51,0});
+    SendRobotPosition2({0.0,1.57,-2.27,-1.51,-0.92,1.55,0});
+    // SendRobotPosition2({0.0,3.11,-1.21,2.56,3.3,-1.51,0});
     counter_++;
     pick = false;
     drop = true;
@@ -475,11 +458,11 @@ bool RobotController::DropPart(geometry_msgs::Pose part_pose, int agv_id) {
     temp_pose.position.z += 0.35;
     // Going to kit here
     GoToTarget({temp_pose, part_pose},0);
-    // ros::Duration(0.5).sleep();
+    ros::Duration(1.0).sleep();
     GripperToggle2(false);
     ros::spinOnce();
-    SendRobotPosition2({0.0,-1.57,-2.27,-1.51,-0.92,1.55,0});
-    SendRobotPosition2({0.0,3.14,-2.27,-1.51,-0.92,1.55,0});
+    SendRobotPosition2({0.0,1.57,-2.27,-1.51,-0.92,1.55,0});
+    // SendRobotPosition2({0.0,3.14,-2.27,-1.51,-0.92,1.55,0});
     return drop;
   }
 }

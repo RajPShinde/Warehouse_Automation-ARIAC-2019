@@ -41,7 +41,7 @@ public:
     void sendRobotToConveyor();
     bool DropPart(geometry_msgs::Pose pose, int agv_id);
     bool DropPart(geometry_msgs::Pose part_pose);
-    void go(geometry_msgs::Pose pick);
+    bool go(geometry_msgs::Pose pick);
     void GripperToggle(const bool& state);
     void GripperToggle2(const bool& state);
     void GripperCallback(const osrf_gear::VacuumGripperState::ConstPtr& grip);

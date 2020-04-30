@@ -23,7 +23,7 @@
           $(arg gui_args)
           $(arg fill_demo_shipment_args)
           --visualize-sensor-views
-          -f $(find group2_rwa5)/config/sample-rwa5.yaml
+          -f $(find group2_rwa5)/config/final_project_a.yaml
           $(find group2_rwa5)/config/my_sample_sensors.yaml
           " required="true" output="screen" />
             	

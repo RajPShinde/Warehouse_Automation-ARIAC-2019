@@ -7,22 +7,23 @@
 options:
   insert_models_over_bins: true
   spawn_extra_models: false
-  belt_population_cycles: 5
+  belt_population_cycles: 20
   model_type_aliases:
     order_part1: piston_rod_part
     order_part2: gear_part
     order_part3: disk_part
     order_part4: pulley_part
+    order_part4: gasket_part
 
 orders:
   order_0:
     announcement_condition: time
     announcement_condition_value: 0.0
-    destinations: [agv2]
+    destinations: [agv1]
     shipment_count: 1
     products:
       product_0:
-        type: order_part1
+        type: order_part4
         pose:
           xyz: [0.1, -0.2, 0]
           rpy: [0, 0, 0]
@@ -49,7 +50,7 @@ orders:
   order_0_update_0:
     announcement_condition: wanted_products
     announcement_condition_value: 4
-    destinations: [agv2]
+    destinations: [agv1]
     shipment_count: 1
     products:
       product_0:
@@ -87,34 +88,49 @@ models_over_bins:
         rpy: [0, 0, 0]
         num_models_x: 3
         num_models_y: 5
-  bin2:
+  # bin2:
+  #   models:
+  #     disk_part:
+  #       xyz_start: [0.1, 0.15, 0.0]
+  #       xyz_end: [0.3, 0.47, 0.0]
+  #       rpy: [0, 0, 'pi/4']
+  #       num_models_x: 2
+  #       num_models_y: 3
+  bin5:
     models:
       disk_part:
-        xyz_start: [0.1, 0.15, 0.0]
-        xyz_end: [0.3, 0.47, 0.0]
-        rpy: [0, 0, 'pi/4']
-        num_models_x: 2
-        num_models_y: 3
-  bin3:
-    models:
-      pulley_part:
         xyz_start: [0.15, 0.15, 0.0]
         xyz_end: [0.15, 0.45, 0.0]
         rpy: [0, 0, 0]
         num_models_x: 1
         num_models_y: 2
-  bin5:
+  bin3:
     models:
       piston_rod_part:
         xyz_start: [0.1, 0.1, 0.0]
         xyz_end: [0.35, 0.45, 0.0]
         rpy: [0, 0, 'pi/4']
-        num_models_x: 3
-        num_models_y: 3
+        num_models_x: 1
+        num_models_y: 2
 
 belt_models:
+  gasket_part:
+    5.0:
+      pose:
+        xyz: [0.0, 0.0, 0.1]
+        rpy: [0, 0, 'pi/2']
+  gear_part:
+    5.0:
+      pose:
+        xyz: [0.0, 0.0, 0.1]
+        rpy: [0, 0, 'pi/2']
+  disk_part:
+    5.0:
+      pose:
+        xyz: [0.0, 0.0, 0.1]
+        rpy: [0, 0, 'pi/2']
   piston_rod_part:
-    10.0:
+    5.0:
       pose:
         xyz: [0.0, 0.0, 0.1]
         rpy: [0, 0, 'pi/2']
