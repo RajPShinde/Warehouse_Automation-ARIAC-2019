@@ -68,6 +68,9 @@ int main(int argc, char **argv) {
 
 
     ROS_INFO("Setup complete.");
+    ros::WallTime start_, end_;
+    start_ = ros::WallTime::now();
+    
 
 
     StartCompetition(node);

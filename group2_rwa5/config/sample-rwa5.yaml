@@ -77,22 +77,22 @@ orders:
           rpy: [0, 0, 0]
 
 models_over_bins:
-  bin1:
-    models:
-      gear_part:
-        xyz_start: [0.1, 0.1, 0.0]
-        xyz_end: [0.4, 0.47, 0.0]
-        rpy: [0, 0, 0]
-        num_models_x: 3
-        num_models_y: 5
-  bin2:
-    models:
-      disk_part:
-        xyz_start: [0.1, 0.15, 0.0]
-        xyz_end: [0.3, 0.47, 0.0]
-        rpy: [0, 0, 'pi/4']
-        num_models_x: 2
-        num_models_y: 3
+  # bin1:
+  #   models:
+  #     gear_part:
+  #       xyz_start: [0.1, 0.1, 0.0]
+  #       xyz_end: [0.4, 0.47, 0.0]
+  #       rpy: [0, 0, 0]
+  #       num_models_x: 3
+  #       num_models_y: 5
+  # bin2:
+  #   models:
+  #     disk_part:
+  #       xyz_start: [0.1, 0.15, 0.0]
+  #       xyz_end: [0.3, 0.47, 0.0]
+  #       rpy: [0, 0, 'pi/4']
+  #       num_models_x: 2
+  #       num_models_y: 3
   bin3:
     models:
       pulley_part:
@@ -103,9 +103,9 @@ models_over_bins:
         num_models_y: 2
   bin5:
     models:
-      piston_rod_part:
+      gasket_part:
         xyz_start: [0.1, 0.1, 0.0]
         xyz_end: [0.35, 0.45, 0.0]
         rpy: [0, 0, 'pi/4']
-        num_models_x: 3
-        num_models_y: 3
+        num_models_x: 1
+        num_models_y: 2

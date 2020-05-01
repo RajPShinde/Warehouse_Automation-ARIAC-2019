@@ -389,7 +389,7 @@ std::vector<std::string> AriacOrderManager::DecideBinArm(std::string conveyor_pa
     ROS_INFO_STREAM("Part count from decide func: " << part_count);
 
     if(part_count <= threshold){
-        if(part_count == 0){
+        if(part_count == 0){            
             if(std::find(empty_bins.begin(), empty_bins.end(), "bin4") != empty_bins.end()){
                 ROS_INFO_STREAM("Bin 4 is empty for placing using arm1");
                 bin = "bin4";
@@ -420,6 +420,7 @@ std::vector<std::string> AriacOrderManager::DecideBinArm(std::string conveyor_pa
                 bin = "bin1";
                 arm = "arm2";
             }
+            }            
         }
         if(part_count != 0){
             if(bin_number == 1 || bin_number == 2 || bin_number == 3)
@@ -427,7 +428,7 @@ std::vector<std::string> AriacOrderManager::DecideBinArm(std::string conveyor_pa
             if(bin_number == 4 || bin_number == 5 || bin_number == 6)
                 arm = "arm1";
         } 
-    }
+    
     ROS_INFO_STREAM("Bin, arm: "<<bin<<" "<<arm);
     bin_and_arm.push_back(bin);
     bin_and_arm.push_back(arm);
@@ -1080,20 +1081,40 @@ std::vector<geometry_msgs::Pose> AriacOrderManager::FillBin(int bin_number, std:
                 ROS_INFO_STREAM("Parts to be added in bin 1: " << threshold - iter_count);
                 for(int j = 1; j <= (threshold - iter_count); j++){
                     //todo - diff thresholds for different part types
-                    new_place_pose.position.x = max_x;
-                    new_place_pose.position.y = max_y - 0.2;
-                    new_place_pose.position.z = 0.005;
-                    new_place_pose.orientation = part_pose_wrt_bin1.orientation;
-                    position_available_bin1.push_back(new_place_pose);
-                    new_place_pose.position.x = min_x;
-                    new_place_pose.position.y = max_y - 0.2;
-                    new_place_pose.position.z = 0.005;
-                    new_place_pose.orientation = part_pose_wrt_bin1.orientation;
-                    position_available_bin1.push_back(new_place_pose);
-                    max_y = max_y - 0.2;
-                    min_y = min_y - 0.2;
-                }
+                    if(conveyor_part_type == "pulley_part"){
+                        new_place_pose.position.x = max_x;
+                        new_place_pose.position.y = max_y - 0.4;
+                        new_place_pose.position.z = 0.005;
+                        new_place_pose.orientation = part_pose_wrt_bin1.orientation;
+                        position_available_bin1.push_back(new_place_pose);
+                        new_place_pose.position.x = min_x;
+                        new_place_pose.position.y = max_y - 0.4;
+                        new_place_pose.position.z = 0.005;
+                        new_place_pose.orientation = part_pose_wrt_bin1.orientation;
+                        position_available_bin1.push_back(new_place_pose);
+                        max_y = max_y - 0.4;
+                        min_y = min_y - 0.4;                        
+                    }
+                    else{
+                        new_place_pose.position.x = max_x;
+                        new_place_pose.position.y = max_y - 0.2;
+                        new_place_pose.position.z = 0.005;
+                        new_place_pose.orientation = part_pose_wrt_bin1.orientation;
+                        position_available_bin1.push_back(new_place_pose);
+                        new_place_pose.position.x = min_x;
+                        new_place_pose.position.y = max_y - 0.2;
+                        new_place_pose.position.z = 0.005;
+                        new_place_pose.orientation = part_pose_wrt_bin1.orientation;
+                        position_available_bin1.push_back(new_place_pose);
+                        max_y = max_y - 0.2;
+                        min_y = min_y - 0.2;
+                    }
 
+                }
+                max_x = round_up(*std::max_element(position_x.begin(), position_x.end()), 2);
+                max_y = round_up(*std::max_element(position_y.begin(), position_y.end()), 2);
+                min_x = round_up(*std::min_element(position_x.begin(), position_x.end()), 2);
+                min_y = round_up(*std::min_element(position_y.begin(), position_y.end()), 2);
             }
             else if(max_y < 0){
                 ROS_INFO_STREAM("Parts in single file LHS");
@@ -1101,51 +1122,106 @@ std::vector<geometry_msgs::Pose> AriacOrderManager::FillBin(int bin_number, std:
                 ROS_INFO_STREAM("Parts to be added in bin 1: " << threshold - iter_count);
                 for(int j = 1; j <= (threshold - iter_count); j++){
                     //todo - diff thresholds for different part types
-                    new_place_pose.position.x = max_x;
-                    new_place_pose.position.y = max_y + 0.2;
-                    new_place_pose.position.z = 0.005;
-                    new_place_pose.orientation = part_pose_wrt_bin1.orientation;
-                    position_available_bin1.push_back(new_place_pose);
-                    new_place_pose.position.x = min_x;
-                    new_place_pose.position.y = max_y + 0.2;
-                    new_place_pose.position.z = 0.005;
-                    new_place_pose.orientation = part_pose_wrt_bin1.orientation;
-                    position_available_bin1.push_back(new_place_pose);
-                    max_y = max_y + 0.2;
-                    min_y = min_y + 0.2;
+                    if(conveyor_part_type == "pulley_part"){
+                        new_place_pose.position.x = max_x;
+                        new_place_pose.position.y = max_y + 0.4;
+                        new_place_pose.position.z = 0.005;
+                        new_place_pose.orientation = part_pose_wrt_bin1.orientation;
+                        position_available_bin1.push_back(new_place_pose);
+                        new_place_pose.position.x = min_x;
+                        new_place_pose.position.y = max_y + 0.4;
+                        new_place_pose.position.z = 0.005;
+                        new_place_pose.orientation = part_pose_wrt_bin1.orientation;
+                        position_available_bin1.push_back(new_place_pose);
+                        max_y = max_y + 0.4;
+                        min_y = min_y + 0.4;
+                    }
+                    else{
+                        new_place_pose.position.x = max_x;
+                        new_place_pose.position.y = max_y + 0.2;
+                        new_place_pose.position.z = 0.005;
+                        new_place_pose.orientation = part_pose_wrt_bin1.orientation;
+                        position_available_bin1.push_back(new_place_pose);
+                        new_place_pose.position.x = min_x;
+                        new_place_pose.position.y = max_y + 0.2;
+                        new_place_pose.position.z = 0.005;
+                        new_place_pose.orientation = part_pose_wrt_bin1.orientation;
+                        position_available_bin1.push_back(new_place_pose);
+                        max_y = max_y + 0.2;
+                        min_y = min_y + 0.2;
+                    }
                 }
-
+                max_x = round_up(*std::max_element(position_x.begin(), position_x.end()), 2);
+                max_y = round_up(*std::max_element(position_y.begin(), position_y.end()), 2);
+                min_x = round_up(*std::min_element(position_x.begin(), position_x.end()), 2);
+                min_y = round_up(*std::min_element(position_y.begin(), position_y.end()), 2);
             }            
 
         }
         if(horizontal_flag_single){
             if(max_x >= 0){
+                ROS_INFO_STREAM("max_x horizontal: " << max_x);
                 ROS_INFO_STREAM("Parts in single file up");
                 position_available_bin1.erase(position_available_bin1.begin(), position_available_bin1.end());
                 ROS_INFO_STREAM("Parts to be added in bin 1: " << threshold - iter_count);
                 for(int j = 1; j <= (threshold - iter_count); j++){
                     //todo - diff thresholds for different part types
-                    new_place_pose.position.x = max_x - 0.2;
-                    new_place_pose.position.y = max_y;
-                    new_place_pose.position.z = 0.005;
-                    new_place_pose.orientation = part_pose_wrt_bin1.orientation;
-                    position_available_bin1.push_back(new_place_pose);
-                    new_place_pose.position.x = max_x - 0.2;
-                    new_place_pose.position.y = min_y;
-                    new_place_pose.position.z = 0.005;
-                    new_place_pose.orientation = part_pose_wrt_bin1.orientation;
-                    position_available_bin1.push_back(new_place_pose);
-                    max_x = max_x - 0.2;
-                    min_x = min_x - 0.2;
+                    if(conveyor_part_type == "pulley_part"){
+                        new_place_pose.position.x = max_x - 0.4;
+                        new_place_pose.position.y = max_y;
+                        new_place_pose.position.z = 0.005;
+                        new_place_pose.orientation = part_pose_wrt_bin1.orientation;
+                        position_available_bin1.push_back(new_place_pose);
+                        new_place_pose.position.x = max_x - 0.4;
+                        new_place_pose.position.y = min_y;
+                        new_place_pose.position.z = 0.005;
+                        new_place_pose.orientation = part_pose_wrt_bin1.orientation;
+                        position_available_bin1.push_back(new_place_pose);
+                        max_x = max_x - 0.4;
+                        min_x = min_x - 0.4;
+                    }
+                    else{
+                        new_place_pose.position.x = max_x - 0.2;
+                        new_place_pose.position.y = max_y;
+                        new_place_pose.position.z = 0.005;
+                        new_place_pose.orientation = part_pose_wrt_bin1.orientation;
+                        position_available_bin1.push_back(new_place_pose);
+                        new_place_pose.position.x = max_x - 0.2;
+                        new_place_pose.position.y = min_y;
+                        new_place_pose.position.z = 0.005;
+                        new_place_pose.orientation = part_pose_wrt_bin1.orientation;
+                        position_available_bin1.push_back(new_place_pose);
+                        max_x = max_x - 0.2;
+                        min_x = min_x - 0.2;
+                    }
                 }
-
+                max_x = round_up(*std::max_element(position_x.begin(), position_x.end()), 2);
+                max_y = round_up(*std::max_element(position_y.begin(), position_y.end()), 2);
+                min_x = round_up(*std::min_element(position_x.begin(), position_x.end()), 2);
+                min_y = round_up(*std::min_element(position_y.begin(), position_y.end()), 2);
             }
             if(max_x < 0){
+                ROS_INFO_STREAM("max_x horizontal: " << max_x);
                 ROS_INFO_STREAM("Parts in single file down");
                 position_available_bin1.erase(position_available_bin1.begin(), position_available_bin1.end());
                 ROS_INFO_STREAM("Parts to be added in bin 1: " << threshold - iter_count);
                 for(int j = 1; j <= (threshold - iter_count); j++){
                     //todo - diff thresholds for different part types
+                    if(conveyor_part_type == "pulley_part"){
+                        new_place_pose.position.x = max_x + 0.4;
+                        new_place_pose.position.y = max_y;
+                        new_place_pose.position.z = 0.005;
+                        new_place_pose.orientation = part_pose_wrt_bin1.orientation;
+                        position_available_bin1.push_back(new_place_pose);
+                        new_place_pose.position.x = max_x + 0.4;
+                        new_place_pose.position.y = min_y;
+                        new_place_pose.position.z = 0.005;
+                        new_place_pose.orientation = part_pose_wrt_bin1.orientation;
+                        position_available_bin1.push_back(new_place_pose);
+                        max_x = max_x + 0.4;
+                        min_x = min_x + 0.4;
+
+                    }
                     new_place_pose.position.x = max_x + 0.2;
                     new_place_pose.position.y = max_y;
                     new_place_pose.position.z = 0.005;
@@ -1159,7 +1235,10 @@ std::vector<geometry_msgs::Pose> AriacOrderManager::FillBin(int bin_number, std:
                     max_x = max_x + 0.2;
                     min_x = min_x + 0.2;
                 }
-
+                max_x = round_up(*std::max_element(position_x.begin(), position_x.end()), 2);
+                max_y = round_up(*std::max_element(position_y.begin(), position_y.end()), 2);
+                min_x = round_up(*std::min_element(position_x.begin(), position_x.end()), 2);
+                min_y = round_up(*std::min_element(position_y.begin(), position_y.end()), 2);
             }
             
         }
@@ -1242,6 +1321,10 @@ std::vector<geometry_msgs::Pose> AriacOrderManager::FillBin(int bin_number, std:
         new_place_pose.position.x = 0.2;
         new_place_pose.position.y = 0.2;
         new_place_pose.position.z = 0.003;
+        new_place_pose.orientation.x = 0.0;
+        new_place_pose.orientation.y = 0.0;
+        new_place_pose.orientation.z = 0.0;
+        new_place_pose.orientation.w = 1.0;
         position_available_bin1.push_back(new_place_pose);
         new_place_pose.position.x = 0.2;
         new_place_pose.position.y = -0.2;

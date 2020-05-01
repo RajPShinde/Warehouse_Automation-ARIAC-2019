@@ -238,112 +238,6 @@ void AriacSensorManager::LogicalCamera8Callback(const osrf_gear::LogicalCameraIm
     }    
 }
 
-/*void AriacSensorManager::LogicalCamera7Callback(const osrf_gear::LogicalCameraImage::ConstPtr& image_msg){
-    if (init7) return;
-    // count_bin7 = image_msg->models.size();
-    // auto imageMessage = *image_msg;
-    // auto imageMessageDerived = imageMessage.models[0].type;
-    // ROS_INFO_STREAM("New part in cb: " << imageMessage.models[0].type);
-    if (image_msg->models.size() == 0) {
-        ROS_ERROR_STREAM("Logical Camera 7 does not see anything");
-        init7 = true;
-    }
-    else {
-        if(image_msg->models.size() !=prev7){
-            prev7=image_msg->models.size();
-            ROS_INFO_STREAM_THROTTLE(10,
-                             "Logical camera 7: '" << image_msg->models.size() << "' objects.");
-            current_parts_7_ = *image_msg;
-            this->BuildProductFrames(7);
-        }
-    }
-}*/
-
-/*void AriacSensorManager::LogicalCamera7Callback(const osrf_gear::LogicalCameraImage::ConstPtr& image_msg){
-    auto imageMessage = *image_msg ;  
-    int obj_count = 1;  
-    // ros::Duration timeout(1.0);
-    tf2_ros::Buffer tfBuffer;
-    tf2_ros::TransformListener tfListener(tfBuffer);
-    // logicalcam_7 = imageMessage.models[0].type;
-            
-    while(obj_count <= image_msg->models.size()){
-        // ROS_INFO_STREAM("Inside 7 callback..");
-      geometry_msgs::TransformStamped tf_camera_wrt_world;
-      //piston rod part is obtained by rostpic echo /ariac/logical_camera_4
-      std::string cam_frame = "logical_camera_7_piston_rod_part_" + std::to_string(obj_count) + "_frame";
-
-      // std::string cam_frame = "logical_camera_7_"+std::string object_on_belt + std::to_string(obj_count) + "_frame";
-      try{
-        tf_camera_wrt_world.transform.translation.x = image_msg->pose.position.x;
-        tf_camera_wrt_world.transform.translation.y = image_msg->pose.position.y;
-        tf_camera_wrt_world.transform.translation.z = image_msg->pose.position.z;
-        tf_camera_wrt_world.transform.rotation.w = image_msg->pose.orientation.w;
-        tf_camera_wrt_world.transform.rotation.x = image_msg->pose.orientation.x;
-        tf_camera_wrt_world.transform.rotation.y = image_msg->pose.orientation.y;
-        tf_camera_wrt_world.transform.rotation.z = image_msg->pose.orientation.z;
-
-        for(auto it=image_msg->models.begin(); it<image_msg->models.end(); ++it){
-//          std::cout << ".............wrt camera frame...............\n" << it->pose;
-
-          geometry_msgs::Pose t_pose = it->pose;
-          tf2::Quaternion q(t_pose.orientation.x,t_pose.orientation.y,t_pose.orientation.z,t_pose.orientation.w);
-            tf2::Matrix3x3 m(q);
-            double roll, pitch, yaw;
-          m.getRPY(roll, pitch, yaw);
-          // ROS_INFO("object in camera frame : [%f,%f,%f] [%f,%f,%f]", t_pose.position.x,
-          //     t_pose.position.y, t_pose.position.z, roll, pitch, yaw);
-          tf2::doTransform(t_pose, t_pose, tf_camera_wrt_world);
-            q = tf2::Quaternion(t_pose.orientation.x,t_pose.orientation.y,t_pose.orientation.z,t_pose.orientation.w);
-            m = tf2::Matrix3x3(q);
-            m.getRPY(roll, pitch, yaw);
-//          std::cout << "..............wrt world frame...............\n" << t_pose << "  roll: "<< roll << "\n  pitch: "<< pitch << "\n  yaw: " << yaw << "\n\n";
-            // ROS_INFO("object in world frame : [%f,%f,%f] [%f,%f,%f]", t_pose.position.x,
-            //               t_pose.position.y, t_pose.position.z, roll, pitch, yaw);
-            roll_grab = roll;
-            pitch_grab = pitch;
-            yaw_grab = yaw;
-            x_grab = t_pose.position.x;
-            y_grab = t_pose.position.y;
-            z_grab = t_pose.position.z;
-        }
-      }
-      catch (tf2::TransformException &ex) {
-        ROS_WARN("%s",ex.what());
-        ros::Duration(1.0).sleep();
-        continue;
-      }
-      
-      
-      if (belt_parts_lcam.size() == 0 || belt_parts_lcam.back() != imageMessage.models[0].type){
-      belt_parts_lcam.push_back(imageMessage.models[0].type);
-      logicalcam_7 = imageMessage.models[0].type;
-      ROS_INFO_STREAM("Part seen by cam7 in sensor: " << logicalcam_7);
-      
-      counter++;
-      if ((std::find(order_parts.begin(), order_parts.end(), imageMessage.models[0].type) != order_parts.end())){
-          if (!(ObjectOnBelt.arm1_engage)){
-              ObjectOnBelt.object = counter;
-              object_derived = ObjectOnBelt.object;
-              ObjectOnBelt.arm1_engage = true;
-              ROS_INFO_STREAM("Orig arm1_engage: "<<ObjectOnBelt.arm1_engage);
-              arm1_engage_derived = ObjectOnBelt.arm1_engage;
-          }
-          std::cout << ObjectOnBelt.object << std::endl;
-          std::cout << ObjectOnBelt.arm1_engage << std::endl;
-          std::cout <<break_beam_counter << std::endl;
-        }
-      }  
-
-      // ROS_INFO("piston_rod_part_%d in world frame: [%f,%f,%f] [%f,%f,%f]", obj_count, transformStamped.transform.translation.x,
-      // transformStamped.transform.translation.y, transformStamped.transform.translation.z, roll, pitch, yaw);      
-      obj_count+=1;
-      
-    }   
-        
-
-}*/
-
 void AriacSensorManager::BuildProductFrames(int camera_id){
     if (camera_id == 1 and current_parts_1_.models.size() != 0) {
         for (auto& msg : current_parts_1_.models) {
@@ -464,6 +358,11 @@ geometry_msgs::Pose AriacSensorManager::GetPartPose(const std::string& src_frame
         part_pose.position.x = camera_tf_transform_.getOrigin().x();
         part_pose.position.y = camera_tf_transform_.getOrigin().y();
         part_pose.position.z = camera_tf_transform_.getOrigin().z();
+        part_pose.orientation.x = camera_tf_transform_.getRotation().x();
+        part_pose.orientation.y = camera_tf_transform_.getRotation().y();
+        part_pose.orientation.z = camera_tf_transform_.getRotation().z();
+        part_pose.orientation.w = camera_tf_transform_.getRotation().w();
+
 
     } else {
         ros::spinOnce();
