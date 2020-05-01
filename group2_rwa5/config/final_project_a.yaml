@@ -14,7 +14,7 @@ time_limit: 500
 options:
   insert_models_over_bins: true
   spawn_extra_models: true
-  belt_population_cycles: 5
+  belt_population_cycles: 10
   model_type_aliases:
     order_part1: gasket_part
     order_part2: piston_rod_part
@@ -57,14 +57,14 @@ orders:
           rpy: ['pi', 0, 'pi']
 
 models_over_bins:
-  bin1:
-    models:
-      gear_part:
-        xyz_start: [0.1, 0.1, 0.0]
-        xyz_end: [0.4, 0.47, 0.0]
-        rpy: [0, 0, '-pi/4']
-        num_models_x: 1
-        num_models_y: 4
+  # bin1:
+  #   models:
+  #     gear_part:
+  #       xyz_start: [0.1, 0.1, 0.0]
+  #       xyz_end: [0.4, 0.47, 0.0]
+  #       rpy: [0, 0, '-pi/4']
+  #       num_models_x: 1
+  #       num_models_y: 4
   bin2:
     models:
       piston_rod_part:
@@ -81,7 +81,7 @@ models_over_bins:
         rpy: [0, 0, 0]
         num_models_x: 1
         num_models_y: 2
-  bin6:
+  bin3:
     models:
       gasket_part:
         xyz_start: [0.1, 0.15, 0.0]
@@ -91,8 +91,8 @@ models_over_bins:
         num_models_y: 2
 
 belt_models:
-  disk_part:
-    10.0:
+  gear_part:
+    5.0:
       pose:
         xyz: [0.0, 0.0, 0.1]
         rpy: [0, 0, 'pi/2']

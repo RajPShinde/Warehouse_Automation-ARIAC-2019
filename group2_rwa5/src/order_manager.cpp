@@ -58,7 +58,7 @@ void AriacOrderManager::OrderCallback(const osrf_gear::Order::ConstPtr& order_ms
     bin4_part = camera_.LogicalCamera4PartType();
     bin5_part = camera_.LogicalCamera5PartType();
     bin6_part = camera_.LogicalCamera6PartType();
-    ROS_INFO_STREAM("Bin 6 part extreme FIRST: "<<bin6_part);
+    // ROS_INFO_STREAM("Bin 6 part extreme FIRST: "<<bin6_part);
     belt_part_1 = camera_.BeltCamera1Part();
     bin_parts = {bin1_part, bin2_part, bin3_part,
               bin4_part, bin5_part, bin6_part};
@@ -192,62 +192,79 @@ void AriacOrderManager::OrderCallback(const osrf_gear::Order::ConstPtr& order_ms
             }
             else{
                 ROS_INFO_STREAM("Checking available points, as follows: ");
-                bin1_poses = FillBin(1, bin1_part);
-                ROS_INFO_STREAM("B1x poses: " << bin1_poses.size());
-                parts_already_in_bin.push_back(bin1_part);
-                // ROS_INFO_STREAM(bin1_poses[0]);
+                if(count1 >= threshold){
+                    bin1_poses = FillBin(1, bin1_part);
+                    ROS_INFO_STREAM("B1x poses: " << bin1_poses.size());
+                    parts_already_in_bin.push_back(bin1_part);
+                    // ROS_INFO_STREAM(bin1_poses[0]);
+                }
+                
             }
             if(std::find(empty_bins.begin(), empty_bins.end(), "bin2") != empty_bins.end()){
                 ROS_INFO_STREAM("Bin 2 positions already created");
             }
             else{
                 ROS_INFO_STREAM("Checking available points, as follows: ");
-                bin2_poses = FillBin(2, bin2_part);
-                ROS_INFO_STREAM("B2x poses: " << bin2_poses.size());
-                parts_already_in_bin.push_back(bin2_part);
-                // ROS_INFO_STREAM(bin1_poses[0]);
+                if(count2 < threshold){
+                    bin2_poses = FillBin(2, bin2_part);
+                    ROS_INFO_STREAM("B2x poses: " << bin2_poses.size());
+                    parts_already_in_bin.push_back(bin2_part);
+                    // ROS_INFO_STREAM(bin1_poses[0]);
+                }
+                
             }
             if(std::find(empty_bins.begin(), empty_bins.end(), "bin3") != empty_bins.end()){
                 ROS_INFO_STREAM("Bin 3 positions already created");
             }
             else{
                 ROS_INFO_STREAM("Checking available points, as follows: ");
-                bin3_poses = FillBin(3, bin3_part);
-                ROS_INFO_STREAM("B3x poses: " << bin3_poses.size());
-                parts_already_in_bin.push_back(bin3_part);
-                // ROS_INFO_STREAM(bin1_poses[0]);
+                if(count3 < threshold){
+                    bin3_poses = FillBin(3, bin3_part);
+                    ROS_INFO_STREAM("B3x poses: " << bin3_poses.size());
+                    parts_already_in_bin.push_back(bin3_part);
+                    // ROS_INFO_STREAM(bin1_poses[0]);
+                }
+                
             }
             if(std::find(empty_bins.begin(), empty_bins.end(), "bin4") != empty_bins.end()){
                 ROS_INFO_STREAM("Bin 4 positions already created");
             }
             else{
                 ROS_INFO_STREAM("Checking available points, as follows: ");
-                bin4_poses = FillBin(4, bin4_part);
-                ROS_INFO_STREAM("B4x poses: " << bin4_poses.size());
-                parts_already_in_bin.push_back(bin4_part);
-                // ROS_INFO_STREAM(bin1_poses[0]);
-                // ROS_INFO_STREAM("Bin4 poses trial: " << bin4_poses[0]);
+                if(count4 < threshold){
+                    bin4_poses = FillBin(4, bin4_part);
+                    ROS_INFO_STREAM("B4x poses: " << bin4_poses.size());
+                    parts_already_in_bin.push_back(bin4_part);
+                    // ROS_INFO_STREAM(bin1_poses[0]);
+                    // ROS_INFO_STREAM("Bin4 poses trial: " << bin4_poses[0]);
+                }
+                
             }
             if(std::find(empty_bins.begin(), empty_bins.end(), "bin5") != empty_bins.end()){
                 ROS_INFO_STREAM("Bin 5 positions already created");
             }
             else{
                 ROS_INFO_STREAM("Checking available points, as follows: ");
-                bin5_poses = FillBin(5, bin5_part);
-                ROS_INFO_STREAM("B5x poses: " << bin5_poses.size());
-                parts_already_in_bin.push_back(bin5_part);
-                // ROS_INFO_STREAM(bin1_poses[0]);
+                if(count5 < threshold){
+                    bin5_poses = FillBin(5, bin5_part);
+                    ROS_INFO_STREAM("B5x poses: " << bin5_poses.size());
+                    parts_already_in_bin.push_back(bin5_part);
+                    // ROS_INFO_STREAM(bin1_poses[0]);
+                }
+                
             }
             if(std::find(empty_bins.begin(), empty_bins.end(), "bin6") != empty_bins.end()){
                 ROS_INFO_STREAM("Bin 6 positions already created");
             }
             else{
                 ROS_INFO_STREAM("Checking available points, as follows: ");
-                bin6_poses = FillBin(6, bin6_part);
-                ROS_INFO_STREAM("B6x poses: " << bin6_poses.size());
-                parts_already_in_bin.push_back(bin6_part);
-                ROS_INFO_STREAM("Orig bin6 poses size: "<<bin6_poses.size());
-                // ROS_INFO_STREAM(bin1_poses[0]);
+                if(count6 < threshold){
+                    bin6_poses = FillBin(6, bin6_part);
+                    ROS_INFO_STREAM("B6x poses: " << bin6_poses.size());
+                    parts_already_in_bin.push_back(bin6_part);
+                    ROS_INFO_STREAM("Orig bin6 poses size: "<<bin6_poses.size());
+                    // ROS_INFO_STREAM(bin1_poses[0]);
+                }                
             }
             if(count1 >= threshold and count2 >= threshold and count3 >= threshold and count4 >= threshold and 
                 count5 >= threshold and count6 >= threshold){
@@ -604,8 +621,8 @@ void AriacOrderManager::FlippedPart(int agv_id, auto pose) {
 void AriacOrderManager::ExecuteOrder() {
     ROS_WARN(">>>>>> Executing order...");
 
-    // PickPartconveyor();
-    ROS_WARN(">>>>>> Executing order...");
+    PickPartconveyor();
+    ROS_WARN(">>>>>> Executing order return");
     bool pick_n_place_success{false};
 
     std::list<std::pair<std::string,geometry_msgs::Pose>> failed_parts;
@@ -618,7 +635,7 @@ void AriacOrderManager::ExecuteOrder() {
     arm1_.SendRobotPosition({0, 3.11, -1.60, 2.0, 4.30, -1.53, 0});
     arm2_.SendRobotPosition2({0, 3.11, -1.60, 2.0, 4.30, -1.53, 0});
     geometry_msgs::PoseStamped StampedPose_in, StampedPose_out;
-
+    UpdateBin();
     while(true) {
         ROS_INFO_STREAM("in");
 
@@ -1317,26 +1334,86 @@ std::vector<geometry_msgs::Pose> AriacOrderManager::FillBin(int bin_number, std:
         case 1: 
             iter_count = count1;
             part_in_bin = bin1_part;
+            if(bin1_part == bin2_part)
+                iter_count = count1 + count2;
+            if(bin1_part == bin3_part)
+                iter_count = count1 + count3;
+            if(bin1_part == bin4_part)
+                iter_count = count1 + count4;
+            if(bin1_part == bin5_part)
+                iter_count = count1 + count5;
+            if(bin1_part == bin6_part)
+                iter_count = count1 + count6;
             break;
         case 2:
             iter_count = count2;
             part_in_bin = bin2_part;
+            if(bin2_part == bin1_part)
+                iter_count = count2 + count1;
+            if(bin2_part == bin3_part)
+                iter_count = count2 + count3;
+            if(bin2_part == bin4_part)
+                iter_count = count2 + count4;
+            if(bin2_part == bin5_part)
+                iter_count = count2 + count5;
+            if(bin2_part == bin6_part)
+                iter_count = count2 + count6;;
             break;
         case 3: 
             iter_count = count3;
             part_in_bin = bin3_part;
+            if(bin3_part == bin1_part)
+                iter_count = count3 + count1;
+            if(bin3_part == bin2_part)
+                iter_count = count3 + count2;
+            if(bin3_part == bin4_part)
+                iter_count = count3 + count4;
+            if(bin3_part == bin5_part)
+                iter_count = count3 + count5;
+            if(bin3_part == bin6_part)
+                iter_count = count3 + count6;
             break;
         case 4:
             iter_count = count4;
             part_in_bin = bin4_part;
+            if(bin4_part == bin1_part)
+                iter_count = count4 + count1;
+            if(bin4_part == bin2_part)
+                iter_count = count4 + count2;
+            if(bin4_part == bin3_part)
+                iter_count = count4 + count3;
+            if(bin4_part == bin5_part)
+                iter_count = count4 + count5;
+            if(bin4_part == bin6_part)
+                iter_count = count4 + count6;
             break;
         case 5: 
             iter_count = count5;
             part_in_bin = bin5_part;
+            if(bin5_part == bin1_part)
+                iter_count = count5 + count1;
+            if(bin5_part == bin2_part)
+                iter_count = count5 + count2;
+            if(bin5_part == bin3_part)
+                iter_count = count5 + count3;
+            if(bin5_part == bin4_part)
+                iter_count = count5 + count4;
+            if(bin5_part == bin6_part)
+                iter_count = count5 + count6;
             break;
         case 6:
             iter_count = count6;
             part_in_bin = bin6_part;
+            if(bin6_part == bin1_part)
+                iter_count = count6 + count1;
+            if(bin6_part == bin2_part)
+                iter_count = count6 + count2;
+            if(bin6_part == bin3_part)
+                iter_count = count6 + count3;
+            if(bin6_part == bin4_part)
+                iter_count = count6 + count4;
+            if(bin6_part == bin5_part)
+                iter_count = count6 + count5;
             break;
         default:
             break;
@@ -1348,6 +1425,7 @@ std::vector<geometry_msgs::Pose> AriacOrderManager::FillBin(int bin_number, std:
     if(iter_count != 0 /*&& iter_count < threshold*/ && part_in_bin == conveyor_part_type){
         ROS_INFO_STREAM("Part in bin: "<< part_in_bin << " " << "and count: " << iter_count);
         for(int i = 1; i <= iter_count; i++){
+            try{
             std::string frame_product = "logical_camera_" + std::to_string(bin_number)+ "_" + part_in_bin + "_" + std::to_string(i) + "_frame";
             // auto part_pose = camera_.GetPartPose("/world", frame_product);
             std::string bin_frame = "/bin" + std::to_string(bin_number) + "_frame";
@@ -1355,6 +1433,11 @@ std::vector<geometry_msgs::Pose> AriacOrderManager::FillBin(int bin_number, std:
             ROS_INFO_STREAM("From fillbin pose: "<<part_pose_wrt_bin1);            
             position_x.push_back(part_pose_wrt_bin1.position.x);
             position_y.push_back(part_pose_wrt_bin1.position.y);
+        }
+        catch(tf2::TransformException &ex){
+            ROS_WARN("%s",ex.what());
+            continue;
+        }
         }
         auto max_x = round_up(*std::max_element(position_x.begin(), position_x.end()), 2);
         auto max_y = round_up(*std::max_element(position_y.begin(), position_y.end()), 2);
@@ -1596,7 +1679,7 @@ std::vector<geometry_msgs::Pose> AriacOrderManager::FillBin(int bin_number, std:
     
 bool AriacOrderManager::PickPartconveyor()
 {
-	ROS_INFO_STREAM("cAME IN PPC");
+	ROS_WARN_STREAM("cAME IN PPC");
 	arm1_.SendRobotPosition({0.0,-3.11,-2.39,-1.63,-0.70,1.57,0});
 	// arm1_.SendRobotPosition({0.0,-3.11,-2.39,-1.63,-0.70,1.57,0});
 	arm2_.SendRobotPosition2({0.0,-3.11,-2.39,-1.63,-0.70,1.57,0});
@@ -1610,11 +1693,12 @@ bool AriacOrderManager::PickPartconveyor()
     bool state;
     geometry_msgs::Pose keep;
     geometry_msgs::PoseStamped StampedPose_in, StampedPose_out;
+    ros::Time start, end;
 
-
-    while(part_count!=3)
+    start = ros::Time::now();
+    while((end - start).toSec()*10 < 120)
     {
-    	
+    	// ROS_WARN_STREAM("Diff: "<<(end - start).toSec());
         ros::spinOnce();
     	FinalDecision=0;
     	int c=0;
@@ -1750,7 +1834,10 @@ bool AriacOrderManager::PickPartconveyor()
         	part_count +=1;
         	UpdateBin();
         }
+        end = ros::Time::now();
+        ros::spinOnce();
     }
+    ROS_WARN_STREAM("Time up");
 }
 
 bool AriacOrderManager::grasp(int arm, std::string part)
@@ -1767,7 +1854,7 @@ bool AriacOrderManager::grasp(int arm, std::string part)
         if(arm==1)
         {
             pick.position.y=0.82;
-            pick.position.z  =0.93;
+            pick.position.z  =0.96;
 	    }
 	    else
 	    {
@@ -1784,7 +1871,7 @@ bool AriacOrderManager::grasp(int arm, std::string part)
 	    }
 	    else
 	    {
-	    	ROS_INFO_STREAM("bABURAO");
+	    	// ROS_INFO_STREAM("bABURAO");
              pick.position.y=-1.24;
              pick.position.z  =0.922;
 	    }
@@ -1849,7 +1936,7 @@ bool AriacOrderManager::grasp(int arm, std::string part)
     	pick.position.x=1.22;
         arm2_.GripperToggle(true);
         bool s=arm2_.go(pick);
-        ros::Duration(0.3).sleep();
+        ros::Duration(1.0).sleep();
         arm2_.SendRobotPosition2({0.0,-3.11,-2.39,-1.63,-0.70,1.57,0});
         return s;
     }
