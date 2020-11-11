@@ -1,4 +1,4 @@
-# group2_rwa5
+# Ariac 2019
 Build Instructions...
 
 Extract the group2_rwa5.zip inside "~/catkin_ws/src/"
